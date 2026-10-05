@@ -35,9 +35,11 @@
                     CMS Admin & Frontend beroperasi pada database bersama (<code class="text-primary fw-bold">kodaposc_bebras_db</code>). Perubahan data di panel ini langsung tercermin di web publik tanpa sinkronisasi HTTP tambahan.
                 </p>
             </div>
+            @if(Route::has('setting.index'))
             <div>
                 <a href="{{ route('setting.index') }}" class="btn btn-sm btn-outline-secondary w-100"><i class="bx bx-cog me-1"></i>Pengaturan Situs</a>
             </div>
+            @endif
         </div>
     </div>
 </div>

@@ -145,7 +145,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{id}', [KegiatanController::class, 'destroy'])->name('kegiatan.destroy');
     });
 
-    // Pengaturan Situs
+    /*
+    // Pengaturan Situs (Dihidden sementara)
     Route::prefix('pengaturan')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('setting.index');
         Route::get('/list', [SettingController::class, 'list'])->name('setting.list');
@@ -155,6 +156,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::put('/{id}', [SettingController::class, 'update'])->name('setting.update');
         Route::delete('/{id}', [SettingController::class, 'destroy'])->name('setting.destroy');
     });
+    */
 
     // Manajemen Berita (Admin)
     Route::prefix('admin/berita')->name('admin.berita.')->group(function () {

@@ -146,9 +146,13 @@
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.hide();
 
-                    if (res.message) {
-                        alert(res.message);
-                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: res.message || 'Akun berhasil ditambahkan!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
 
                     if ($.fn.DataTable.isDataTable('#table-akun')) {
                         $('#table-akun').DataTable().ajax.reload(null, false);
@@ -159,16 +163,23 @@
                         let errors = xhr.responseJSON.errors;
                         let msg = "";
                         $.each(errors, function (key, val) {
-                            msg += "- " + val[0] + "\n";
+                            msg += val[0] + "<br>";
                         });
-                        alert("Validasi gagal:\n" + msg);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validasi Gagal!',
+                            html: msg
+                        });
                     } else {
                         console.error(xhr.responseText);
-                        alert("Terjadi kesalahan pada server!");
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan pada server!'
+                        });
                     }
                 },
                 complete: function () {
-                    // Aktifkan kembali tombol submit
                     $submitButton.prop('disabled', false).text(originalText);
                 }
             });
@@ -178,21 +189,18 @@
         let id = $(this).data('id');
 
         $.get("{{ url('akun') }}/" + id + "/edit", function(res) {
-            // isi data user
             $('#edit_id').val(res.user.id);
             $('#edit_name').val(res.user.name);
             $('#edit_username').val(res.user.username);
             $('#edit_email').val(res.user.email);
             $('#edit_password').val('');
 
-            // isi dropdown role
-            $('#edit_role_id').empty(); // kosongkan dulu
+            $('#edit_role_id').empty();
             $.each(res.roles, function(i, role) {
                 let selected = (res.user.roles.length && res.user.roles[0].id === role.id) ? 'selected' : '';
                 $('#edit_role_id').append(`<option value="${role.id}" ${selected}>${role.name}</option>`);
             });
 
-            // tampilkan modal
             $('#editModal').modal('show');
         });
     });
@@ -206,14 +214,29 @@
         $.ajax({
             url: "/akun/" + id,   
             type: "POST",       
-            data: formData + '&_method=PUT', // spoof jadi PUT
+            data: formData + '&_method=PUT',
             success: function(res) {
                 $('#editModal').modal('hide');
-                $('#table-akun').DataTable().ajax.reload();
-                alert('User berhasil diperbarui!');
+                $('#table-akun').DataTable().ajax.reload(null, false);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'User berhasil diperbarui.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
+                let msg = 'Terjadi kesalahan saat memperbarui akun!';
+                if (xhr.status === 422 && xhr.responseJSON.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).map(e => e[0]).join('<br>');
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    html: msg
+                });
             }
         });
     });
@@ -221,31 +244,45 @@
     $("#table-akun").on('click', '.delete', function () {
         let id = $(this).data("id");
 
-        if (!confirm("Yakin mau hapus user ini?")) return;
-
-        $("#table-akun").on('click', '.delete', function () {
-        let id = $(this).data("id");
-
-        if (!confirm("Yakin mau hapus user ini?")) return;
-
-        $.ajax({
-            url: "{{ url('/akun') }}/" + id, // /akun/16
-            type: "DELETE",
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (res) {
-                alert(res.message);
-                $('#table-akun').DataTable().ajax.reload(null, false);
-            },
-            error: function (xhr) {
-                console.error(xhr.responseText);
-                alert("Terjadi kesalahan!");
+        Swal.fire({
+            title: 'Hapus User ini?',
+            text: "Data user yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ url('/akun') }}/" + id,
+                    type: "DELETE",
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Dihapus!',
+                            text: res.message || 'User berhasil dihapus.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        $('#table-akun').DataTable().ajax.reload(null, false);
+                    },
+                    error: function (xhr) {
+                        console.error(xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat menghapus user!'
+                        });
+                    }
+                });
             }
         });
     });
-});
-
 
     });
 
