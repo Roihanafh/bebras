@@ -117,13 +117,15 @@
                 </a>
             </li>
 
-            <!-- Pengaturan -->
+            {{-- 
+            <!-- Pengaturan Situs (Dihidden sementara) -->
             <li class="menu-item {{ Route::is('setting.*') ? 'active' : '' }}">
                 <a href="{{ route('setting.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-cog"></i>
                     <div data-i18n="Pengaturan">Pengaturan Situs</div>
                 </a>
             </li>
+            --}}
 
             <!-- Pages -->
             <li class="menu-header small text-uppercase">
