@@ -113,7 +113,7 @@
                                     </p>
                                 @endif
 
-                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words">
+                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words" style="max-height: 4.5rem; overflow: hidden;">
                                     {!! $kegiatan->deskripsi !!}
                                 </div>
                             </div>

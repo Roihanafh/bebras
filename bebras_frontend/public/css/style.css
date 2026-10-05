@@ -56,17 +56,17 @@ body {
     overflow-wrap: break-word !important;
     word-break: normal !important;
     text-overflow: ellipsis !important;
-    max-height: 4.5em !important;
-    line-height: 1.5em !important;
+    max-height: 4.5rem !important;
+    line-height: 1.5rem !important;
+    font-size: 0.875rem !important;
 }
 
-.line-clamp-vertical p,
-.line-clamp-vertical div,
-.line-clamp-vertical span {
+.line-clamp-vertical * {
     display: inline !important;
     margin: 0 !important;
     padding: 0 !important;
-    line-height: inherit !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5rem !important;
 }
 
 .btn-primary {

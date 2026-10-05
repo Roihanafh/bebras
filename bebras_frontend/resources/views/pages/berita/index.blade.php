@@ -84,7 +84,7 @@
                                 </div>
 
                                 <!-- Deskripsi -->
-                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words">
+                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words" style="max-height: 4.5rem; overflow: hidden;">
                                     {!! $berita->deskripsi !!}
                                 </div>
                             </div>
