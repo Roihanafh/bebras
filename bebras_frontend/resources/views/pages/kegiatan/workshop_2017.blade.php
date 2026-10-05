@@ -45,7 +45,7 @@
                     <h5 class="mt-3 text-lg font-bold text-gray-800 line-clamp-2">
                         {{ $workshop->judul }}
                     </h5>
-                    <div class="text-gray-600 text-sm mt-2 leading-relaxed">
+                    <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words">
                         {!! $workshop->deskripsi !!}
                     </div>
                 </div>

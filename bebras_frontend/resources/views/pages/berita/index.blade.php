@@ -44,7 +44,7 @@
                             ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                         @endphp
 
-                        <div class="group bg-gray-50 hover:bg-white rounded-xl shadow hover:shadow-xl transition duration-300 p-6 border border-gray-100 cursor-pointer flex flex-col justify-between"
+                        <div class="group bg-gray-50 hover:bg-white rounded-xl shadow hover:shadow-xl transition duration-300 p-6 border border-gray-100 cursor-pointer flex flex-col justify-between h-full"
                              onclick='openDetailModal({!! $cardData !!})'>
 
                             <div>
@@ -84,7 +84,7 @@
                                 </div>
 
                                 <!-- Deskripsi -->
-                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words [word-break:break-all]">
+                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words">
                                     {!! $berita->deskripsi !!}
                                 </div>
                             </div>

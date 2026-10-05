@@ -50,15 +50,14 @@ body {
 /* Vertical Line Clamp untuk Deskripsi HTML */
 .line-clamp-vertical {
     display: -webkit-box !important;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    word-break: break-all;
-    text-overflow: ellipsis;
-    max-height: 4.8em;
-    line-height: 1.6em;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    text-overflow: ellipsis !important;
+    max-height: 4.5em !important;
+    line-height: 1.5em !important;
 }
 
 .line-clamp-vertical p,
@@ -67,6 +66,7 @@ body {
     display: inline !important;
     margin: 0 !important;
     padding: 0 !important;
+    line-height: inherit !important;
 }
 
 .btn-primary {

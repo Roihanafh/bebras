@@ -69,7 +69,7 @@
                         ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                     @endphp
 
-                    <div class="group bg-white rounded-xl shadow hover:shadow-2xl transition duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col justify-between"
+                    <div class="group bg-white rounded-xl shadow hover:shadow-2xl transition duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col justify-between h-full"
                          onclick='openDetailModal({!! $cardData !!})'>
 
                         <div>
@@ -113,7 +113,7 @@
                                     </p>
                                 @endif
 
-                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words [word-break:break-all]">
+                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words">
                                     {!! $kegiatan->deskripsi !!}
                                 </div>
                             </div>
