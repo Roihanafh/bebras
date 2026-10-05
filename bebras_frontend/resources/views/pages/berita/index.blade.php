@@ -84,7 +84,7 @@
                                 </div>
 
                                 <!-- Deskripsi -->
-                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical">
+                                <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words [word-break:break-all]">
                                     {!! $berita->deskripsi !!}
                                 </div>
                             </div>

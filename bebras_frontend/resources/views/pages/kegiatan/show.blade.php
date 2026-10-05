@@ -113,7 +113,7 @@
                                     </p>
                                 @endif
 
-                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical">
+                                <div class="text-gray-600 text-sm mt-2 leading-relaxed line-clamp-vertical break-words [word-break:break-all]">
                                     {!! $kegiatan->deskripsi !!}
                                 </div>
                             </div>
