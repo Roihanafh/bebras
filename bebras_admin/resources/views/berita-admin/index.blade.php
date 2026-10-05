@@ -71,6 +71,56 @@ $(document).ready(function() {
     });
 
     setTimeout(function() { $('.alert').alert('close'); }, 4000);
+
+    // SweetAlert2 — konfirmasi approve / reject / hapus
+    $(document).on('click', '.btn-aksi-berita', function () {
+        const btn    = $(this);
+        const form   = btn.closest('.form-aksi-berita');
+        const type   = btn.data('type');
+        const msg    = btn.data('msg');
+
+        const config = {
+            approve: {
+                title: 'Setujui Berita',
+                icon: 'question',
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'Ya, Setujui',
+            },
+            reject: {
+                title: 'Tolak Berita',
+                icon: 'warning',
+                confirmButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Tolak',
+            },
+            delete: {
+                title: 'Hapus Berita',
+                icon: 'warning',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus',
+            },
+        }[type] ?? {
+            title: 'Konfirmasi',
+            icon: 'question',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Ya',
+        };
+
+        Swal.fire({
+            title: config.title,
+            text: msg,
+            icon: config.icon,
+            showCancelButton: true,
+            confirmButtonColor: config.confirmButtonColor,
+            cancelButtonColor: '#adb5bd',
+            confirmButtonText: config.confirmButtonText,
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form[0].submit();
+            }
+        });
+    });
 });
 </script>
 @endpush

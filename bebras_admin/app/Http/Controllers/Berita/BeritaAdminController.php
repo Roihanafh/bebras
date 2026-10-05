@@ -52,43 +52,50 @@ class BeritaAdminController extends Controller
                     $rejectUrl  = route('admin.berita.reject', $row->id);
                     $deleteUrl  = route('admin.berita.destroy', $row->id);
 
-                    $statusLabel = match ($row->status_validasi) {
-                        'approved' => 'sudah disetujui',
-                        'rejected' => 'sudah ditolak',
-                        default    => null,
+                    $approveNote = match ($row->status_validasi) {
+                        'approved' => 'Berita ini sudah disetujui. Yakin ingin menyetujui ulang?',
+                        'rejected' => 'Berita ini sudah ditolak. Yakin ingin menyetujui?',
+                        default    => 'Setujui berita ini?',
                     };
 
-                    $approveConfirm = $statusLabel
-                        ? "Berita ini {$statusLabel}. Yakin ingin menyetujui ulang?"
-                        : 'Setujui berita ini?';
-
-                    $rejectConfirm = $statusLabel
-                        ? "Berita ini {$statusLabel}. Yakin ingin menolak ulang?"
-                        : 'Tolak berita ini?';
+                    $rejectNote = match ($row->status_validasi) {
+                        'approved' => 'Berita ini sudah disetujui. Yakin ingin menolak?',
+                        'rejected' => 'Berita ini sudah ditolak. Yakin ingin menolak ulang?',
+                        default    => 'Tolak berita ini?',
+                    };
 
                     return '
                         <div class="d-flex gap-1 flex-wrap">
                             <a href="' . $editUrl . '" class="btn btn-sm btn-warning" title="Edit">
                                 <i class="bx bx-edit"></i>
                             </a>
-                            <form action="' . $approveUrl . '" method="POST"
-                                  onsubmit="return confirm(\'' . addslashes($approveConfirm) . '\')">
+                            <form action="' . $approveUrl . '" method="POST" class="form-aksi-berita">
                                 ' . csrf_field() . '
-                                <button type="submit" class="btn btn-sm btn-success" title="Setujui">
+                                <button type="button"
+                                        class="btn btn-sm btn-success btn-aksi-berita"
+                                        data-type="approve"
+                                        data-msg="' . addslashes($approveNote) . '"
+                                        title="Setujui">
                                     <i class="bx bx-check"></i>
                                 </button>
                             </form>
-                            <form action="' . $rejectUrl . '" method="POST"
-                                  onsubmit="return confirm(\'' . addslashes($rejectConfirm) . '\')">
+                            <form action="' . $rejectUrl . '" method="POST" class="form-aksi-berita">
                                 ' . csrf_field() . '
-                                <button type="submit" class="btn btn-sm btn-secondary" title="Tolak">
+                                <button type="button"
+                                        class="btn btn-sm btn-secondary btn-aksi-berita"
+                                        data-type="reject"
+                                        data-msg="' . addslashes($rejectNote) . '"
+                                        title="Tolak">
                                     <i class="bx bx-x"></i>
                                 </button>
                             </form>
-                            <form action="' . $deleteUrl . '" method="POST"
-                                  onsubmit="return confirm(\'Hapus berita ini secara permanen?\')">
+                            <form action="' . $deleteUrl . '" method="POST" class="form-aksi-berita">
                                 ' . csrf_field() . method_field('DELETE') . '
-                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                <button type="button"
+                                        class="btn btn-sm btn-danger btn-aksi-berita"
+                                        data-type="delete"
+                                        data-msg="Berita ini akan dihapus permanen dan tidak bisa dikembalikan."
+                                        title="Hapus">
                                     <i class="bx bx-trash"></i>
                                 </button>
                             </form>
