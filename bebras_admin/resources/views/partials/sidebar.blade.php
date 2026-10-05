@@ -130,18 +130,11 @@
                 <span class="menu-header-text">Pages</span>
             </li>
 
-            <li class="menu-item {{ Request::is('account*') ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle">
-                    <i class="menu-icon tf-icons bx bx-dock-top"></i>
-                    <div data-i18n="Account Settings">Account Settings</div>
+            <li class="menu-item {{ Route::is('register') || Request::is('account*') ? 'active' : '' }}">
+                <a href="{{ route('register') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-user"></i>
+                    <div data-i18n="Manajemen Akun">Manajemen Akun</div>
                 </a>
-                <ul class="menu-sub">
-                    <li class="menu-item {{ Route::is('register') ? 'active' : '' }}">
-                        <a href="{{ route('register') }}" class="menu-link">
-                            <div data-i18n="Account">Pengaturan Akun</div>
-                        </a>
-                    </li>
-                </ul>
             </li>
         @endif
     </ul>
