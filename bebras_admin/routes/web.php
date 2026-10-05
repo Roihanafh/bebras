@@ -13,6 +13,8 @@ use App\Http\Controllers\SoalBookController;
 use App\Http\Controllers\SoalController;
 use App\Http\Controllers\TentangBebrasController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Berita\BeritaBiroController;
+use App\Http\Controllers\Berita\BeritaAdminController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -154,6 +156,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{id}', [SettingController::class, 'destroy'])->name('setting.destroy');
     });
 
+    // Manajemen Berita (Admin)
+    Route::prefix('admin/berita')->name('admin.berita.')->group(function () {
+        Route::get('/', [BeritaAdminController::class, 'index'])->name('index');
+        Route::get('/list', [BeritaAdminController::class, 'list'])->name('list');
+        Route::get('/{id}/edit', [BeritaAdminController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [BeritaAdminController::class, 'update'])->name('update');
+        Route::post('/{id}/approve', [BeritaAdminController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [BeritaAdminController::class, 'reject'])->name('reject');
+        Route::delete('/{id}', [BeritaAdminController::class, 'destroy'])->name('destroy');
+    });
+
     // CMS Beranda
     Route::prefix('beranda')->name('beranda.')->group(function () {
         Route::get('/', [BerandaCmsController::class, 'index'])->name('index');
@@ -171,4 +184,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         });
     });
 
+});
+
+// Routes untuk role biro — dilindungi middleware auth + role:biro
+Route::middleware(['auth', 'role:biro'])->group(function () {
+    Route::get('/berita', [BeritaBiroController::class, 'index'])->name('berita.index');
+    Route::get('/berita/list', [BeritaBiroController::class, 'list'])->name('berita.list');
+    Route::get('/berita/create', [BeritaBiroController::class, 'create'])->name('berita.create');
+    Route::post('/berita/store', [BeritaBiroController::class, 'store'])->name('berita.store');
+    Route::get('/berita/{id}/edit', [BeritaBiroController::class, 'edit'])->name('berita.edit');
+    Route::put('/berita/{id}', [BeritaBiroController::class, 'update'])->name('berita.update');
+    Route::delete('/berita/{id}', [BeritaBiroController::class, 'destroy'])->name('berita.destroy');
 });

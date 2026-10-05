@@ -15,6 +15,7 @@ class Kegiatan extends Model
     protected $fillable = [
         'menu_kegiatan_id',
         'tipe',
+        'status_validasi',
         'judul',
         'deskripsi',
         'gambar',
@@ -22,6 +23,10 @@ class Kegiatan extends Model
         'tanggal_lokasi',
         'speaker',
         'urutan',
+        'dibuat_oleh',
+        'divalidasi_oleh',
+        'divalidasi_pada',
+        'catatan_validasi',
     ];
 
     public function menuKegiatan(): BelongsTo

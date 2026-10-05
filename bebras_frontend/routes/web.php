@@ -32,6 +32,9 @@ Route::prefix('soal')->name('soal.')->group(function () {
 });
 
 use App\Http\Controllers\KegiatanController;
+use App\Http\Controllers\BeritaController;
+
+Route::get('/kegiatan/berita', [BeritaController::class, 'index'])->name('berita');
 
 Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
     Route::get('/{slug}', [KegiatanController::class, 'show'])->name('show');

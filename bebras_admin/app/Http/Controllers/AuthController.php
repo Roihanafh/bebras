@@ -26,6 +26,8 @@ class AuthController extends Controller
             // cek role
             if ($user->hasRole('admin')) {
                 return redirect()->route('admin.dashboard');
+            } elseif ($user->hasRole('biro')) {
+                return redirect()->route('berita.index');
             } elseif ($user->hasRole('user')) {
                 return "test";
             }
