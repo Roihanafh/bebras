@@ -15,28 +15,28 @@ class RoleSeeder extends Seeder
     {
 
         $biroRole  = Role::firstOrCreate(['name' => 'biro']);
-        // $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        // $userRole  = Role::firstOrCreate(['name' => 'user']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $userRole  = Role::firstOrCreate(['name' => 'user']);
 
-        // $admin = User::firstOrCreate(
-        //     ['email' => 'admin@example.com'],
-        //     [
-        //         'name'     => 'Admin',
-        //         'username' => 'admin',
-        //         'password' => Hash::make('password'),
-        //     ]
-        // );
-        // $admin->roles()->syncWithoutDetaching([$adminRole->id]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name'     => 'Admin',
+                'username' => 'admin',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $admin->roles()->syncWithoutDetaching([$adminRole->id]);
 
-        // $user = User::firstOrCreate(
-        //     ['email' => 'user@example.com'],
-        //     [
-        //         'name'     => 'User 1',
-        //         'username' => 'user_1',
-        //         'password' => Hash::make('password'),
-        //     ]
-        // );
-        // $user->roles()->syncWithoutDetaching([$userRole->id]);
+        $user = User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name'     => 'User 1',
+                'username' => 'user_1',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $user->roles()->syncWithoutDetaching([$userRole->id]);
 
         $biro = User::firstOrCreate(
             ['email' => 'biro@example.com'],

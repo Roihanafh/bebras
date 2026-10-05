@@ -74,23 +74,43 @@ $(document).ready(function() {
 
     // SweetAlert2 — konfirmasi approve / reject / hapus
     $(document).on('click', '.btn-aksi-berita', function () {
-        const btn    = $(this);
-        const form   = btn.closest('.form-aksi-berita');
-        const type   = btn.data('type');
-        const msg    = btn.data('msg');
+        const btn  = $(this);
+        const form = btn.closest('.form-aksi-berita');
+        const type = btn.data('type');
+        const msg  = btn.data('msg');
 
+        // Reject: tampilkan dialog dengan textarea alasan penolakan
+        if (type === 'reject') {
+            Swal.fire({
+                title: 'Tolak Berita',
+                html: `<p class="text-muted mb-2">${msg}</p>`,
+                input: 'textarea',
+                inputLabel: 'Alasan penolakan (opsional)',
+                inputPlaceholder: 'Tuliskan alasan penolakan untuk membantu biro memperbaiki berita...',
+                inputAttributes: { rows: 4, maxlength: 1000 },
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#6c757d',
+                cancelButtonColor: '#adb5bd',
+                confirmButtonText: 'Ya, Tolak',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.find('input[name="catatan_validasi"]').val(result.value ?? '');
+                    form[0].submit();
+                }
+            });
+            return;
+        }
+
+        // Approve & delete: konfirmasi biasa
         const config = {
             approve: {
                 title: 'Setujui Berita',
                 icon: 'question',
                 confirmButtonColor: '#28a745',
                 confirmButtonText: 'Ya, Setujui',
-            },
-            reject: {
-                title: 'Tolak Berita',
-                icon: 'warning',
-                confirmButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, Tolak',
             },
             delete: {
                 title: 'Hapus Berita',

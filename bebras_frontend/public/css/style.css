@@ -47,6 +47,26 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* Vertical Line Clamp untuk Deskripsi HTML */
+.line-clamp-vertical {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    text-overflow: ellipsis;
+    max-height: 4.8em;
+    line-height: 1.6em;
+}
+
+.line-clamp-vertical p,
+.line-clamp-vertical div,
+.line-clamp-vertical span {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .btn-primary {
     background: linear-gradient(to right, #00CAFF, #0099CC);
     transition: all 0.3s ease;

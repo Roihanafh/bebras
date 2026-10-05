@@ -29,7 +29,11 @@ class KegiatanController extends Controller
     public function list(Request $request)
     {
         if ($request->ajax()) {
-            $kegiatan = Kegiatan::with('menuKegiatan')->whereNotNull('menu_kegiatan_id')->orderBy('menu_kegiatan_id')->orderBy('urutan');
+            $kegiatan = Kegiatan::with('menuKegiatan')
+                ->where('tipe', '!=', 'berita')
+                ->whereNotNull('menu_kegiatan_id')
+                ->orderBy('menu_kegiatan_id')
+                ->orderBy('urutan');
             return DataTables::of($kegiatan)
                 ->addIndexColumn()
                 ->addColumn('menu_nama', fn($row) => $row->menuKegiatan?->nama_menu ?? '-')
@@ -84,6 +88,7 @@ class KegiatanController extends Controller
         ]);
 
         $validated['tipe'] = 'kegiatan_menu';
+        $validated['status_validasi'] = 'approved';
 
         DB::beginTransaction();
         try {
@@ -129,6 +134,7 @@ class KegiatanController extends Controller
         ]);
 
         $validated['tipe'] = 'kegiatan_menu';
+        $validated['status_validasi'] = 'approved';
 
         DB::beginTransaction();
         try {

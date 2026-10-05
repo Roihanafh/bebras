@@ -30,25 +30,25 @@ class CmsContentSeeder extends Seeder
             'judul' => 'Bebras Challenge 2023',
             'deskripsi' => 'Ajang tahunan untuk mengasah kemampuan computational thinking siswa',
             'gambar' => 'img/banner1.jpg',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         Banner::create([
             'judul' => 'Workshop Guru',
             'deskripsi' => 'Meningkatkan kapasitas guru dalam pembelajaran computational thinking',
             'gambar' => 'img/banner2.jpg',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
         Banner::create([
             'judul' => 'Kompetisi Nasional',
             'deskripsi' => 'Tunjukkan kemampuan problem solving terbaik dan raih penghargaan',
             'gambar' => 'img/banner3.jpg',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
         Banner::create([
             'judul' => 'Tujuan Bebras',
             'deskripsi' => 'Mempromosikan informatika dan berpikir komputasi kepada para guru',
             'gambar' => 'img/banner4.jpg',
-            'urutan' => 4
+            'urutan' => 4,
         ]);
 
         // === 2. Settings (Global configuration) ===
@@ -70,21 +70,24 @@ class CmsContentSeeder extends Seeder
             'judul'   => 'Lokakarya Nasional',
             'deskripsi' => 'Berlangsung sekali setahun untuk koordinasi komite nasional (NBO Bebras Indonesia) dengan mitra (Bebras Biro), dan menetapkan soal-soal nasional.',
             'gambar'  => 'img/Lokakarya Nasional.jpeg',
-            'urutan'  => 1
+            'urutan'  => 1,
+            'status_validasi' => 'approved',
         ]);
         Kegiatan::create([
             'tipe'    => 'kegiatan_utama',
             'judul'   => 'Lokakarya untuk Guru',
             'deskripsi' => 'Workshop/lokakarya dilaksanakan oleh Bebras Biro untuk memberi bekal kepada guru agar para guru mampu memperkenalkan konsep berpikir komputasi.',
             'gambar'  => 'img/Lokakarya untuk Guru.jpeg',
-            'urutan'  => 2
+            'urutan'  => 2,
+            'status_validasi' => 'approved',
         ]);
         Kegiatan::create([
             'tipe'    => 'kegiatan_utama',
             'judul'   => 'Tantangan Berpikir Komputasional Bebras',
             'deskripsi' => 'Diselenggarakan sesuai jadwal yang ditetapkan komite internasional, biasanya minggu kedua atau ketiga November (disebut Bebras Week).',
             'gambar'  => 'img/Tantangan Berpikir.jpeg',
-            'urutan'  => 3
+            'urutan'  => 3,
+            'status_validasi' => 'approved',
         ]);
 
         // Workshop 2017 cards — menu_kegiatan_id will be set in section 8 after MenuKegiatan seeding
@@ -98,7 +101,7 @@ class CmsContentSeeder extends Seeder
             ['judul' => 'Politeknik Caltex Riau, 6 Juli 2017',              'deskripsi' => 'Professor & Expert visit series 2017: Bebras CT <br><span class="font-semibold">Prof. Dr. Valentina Dagiene</span>',                            'gambar' => 'img/workshop_a7.jpg',  'kota' => 'Pekanbaru', 'urutan' => 7],
         ];
         foreach ($w2017Items as $item) {
-            Kegiatan::create(array_merge($item, ['tipe' => 'workshop_2017']));
+            Kegiatan::create(array_merge($item, ['tipe' => 'workshop_2017', 'status_validasi' => 'approved']));
         }
 
         // === 4. Tentang Bebras Pages ===
@@ -203,7 +206,7 @@ class CmsContentSeeder extends Seeder
             'judul' => 'Soal Bebras',
             'gambar' => 'img/pilnas.png',
             'body' => '<p>Soal Bebras berperan penting bagi siswa (peserta kompetisi) maupun guru (sebagai penyusun soal). Siswa <span class="font-semibold ">didorong</span> untuk berpikir tentang informatika, sedangkan guru harus berpikir tentang kaitan kehidupan sehari-hari dengan ilmu komputer. Soal yang kreatif dan menarik adalah tantangan utama dalam penyelenggaraan kompetisi Bebras.</p><p class="mt-4">Penyusun soal Bebras berusaha memilih soal yang menarik untuk memotivasi siswa dalam mengidentifikasi persoalan informatika dan berpikir lebih dalam tentang teknologi. Mereka juga ingin menyajikan sebanyak mungkin topik informatika dan pembelajaran komputer. Di bidang informatika, masih ada masalah silabus. Bahkan di sekolah-sekolah di beberapa negara, sampai saat ini belum ada kesepakatan bersama materi apa yang harus dimasukkan dalam silabus informatika yang terpadu, dengan memanfaatkan teknologi informasi.</p><p class="mt-4">Karena dirancang untuk siswa mulai kelas SD, Soal Bebras dibuat pendek dan harus mengandung konsep informatika seperti:</p>',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         $indexSoal->items()->createMany([
             ['tipe' => 'konsep', 'judul' => 'Sequential dan concurrent', 'urutan' => 1],
@@ -228,7 +231,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'pembahasan-soal',
             'judul' => '📚 Pembahasan Soal Bebras',
             'gambar' => 'img/bebras.png',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
         // Seed pembahasan books
         SoalBook::create(['kategori' => 'sikecil', 'judul' => 'Buku Bebras SiKecil 2020', 'pdf_link' => 'https://bebras.or.id/v3/wp-content/uploads/2024/10/Bebras-Indonesia-Book-2020-SiKecil-OK-Okt2024.pdf', 'cover_image' => 'img/buku2020-sikecil.jpg', 'urutan' => 1]);
@@ -256,7 +259,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'Contoh Soal',
             'slug' => 'contoh-soal',
             'judul' => 'Contoh Soal Bebras',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
 
         // siaga-sd
@@ -266,7 +269,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'siaga-sd',
             'judul' => 'Contoh Soal SIAGA untuk Siswa SD',
             'gambar' => 'img/b_countdown.jpg',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
         $sdChal = SoalChallenge::create([
             'menu_soal_id' => $sd->id,
@@ -295,7 +298,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'penggalang-smp',
             'judul' => 'Contoh Soal Penggalang untuk Siswa SMP',
             'gambar' => 'img/b_countdown.jpg',
-            'urutan' => 4
+            'urutan' => 4,
         ]);
         $smpChal = SoalChallenge::create([
             'menu_soal_id' => $smp->id,
@@ -325,7 +328,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'penegak-sma',
             'judul' => 'Contoh Soal Penegak untuk Siswa SMA',
             'gambar' => 'img/b_countdown.jpg',
-            'urutan' => 5
+            'urutan' => 5,
         ]);
         $smaChal = SoalChallenge::create([
             'menu_soal_id' => $sma->id,
@@ -405,7 +408,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'Workshop',
             'slug' => 'workshop',
             'judul' => 'Workshop Bebras Indonesia',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m1->id,
@@ -413,7 +416,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'workshop-2017',
             'judul' => 'Workshop 2017',
             'body' => '<p>Kegiatan Workshop Bebras 2017 diselenggarakan di berbagai kota di Indonesia untuk melatih guru-guru memperkenalkan konsep berpikir komputasi.</p>',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m1->id,
@@ -421,14 +424,14 @@ class CmsContentSeeder extends Seeder
             'slug' => 'workshop-2016',
             'judul' => 'Workshop 2016',
             'body' => '<p>Awal mula inisiasi sosialisasi bebras dan lokakarya computational thinking pada tahun 2016.</p>',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
 
         $m2 = MenuKegiatan::create([
             'nama_menu' => 'Bebras Challenge',
             'slug' => 'bebras-challenge',
             'judul' => 'Tantangan Bebras Indonesia',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m2->id,
@@ -436,7 +439,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'challenge-2024',
             'judul' => 'Bebras Challenge 2024',
             'body' => '<p>Informasi pelaksanaan dan panduan Bebras Indonesia Challenge 2024.</p>',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m2->id,
@@ -444,7 +447,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'challenge-2023',
             'judul' => 'Bebras Challenge 2023',
             'body' => '<p>Dokumentasi tantangan Bebras Indonesia Challenge 2023.</p>',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m2->id,
@@ -452,7 +455,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'challenge-2022',
             'judul' => 'Bebras Challenge 2022',
             'body' => '<p>Dokumentasi tantangan Bebras Indonesia Challenge 2022.</p>',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
 
         MenuKegiatan::create([
@@ -460,14 +463,14 @@ class CmsContentSeeder extends Seeder
             'slug' => 'statistik-bebras-indonesia-challenge',
             'judul' => 'Statistik Bebras Indonesia Challenge',
             'body' => '<p>Berikut statistik sebaran peserta dan sekolah yang berpartisipasi dalam Bebras Challenge nasional.</p>',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
 
         $m4 = MenuKegiatan::create([
             'nama_menu' => 'Pengumuman Hasil',
             'slug' => 'pengumuman-hasil',
             'judul' => 'Pengumuman Hasil',
-            'urutan' => 4
+            'urutan' => 4,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m4->id,
@@ -475,7 +478,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'pengumuman-2024',
             'judul' => 'Pengumuman Hasil 2024',
             'body' => '<p>Daftar pemenang dan statistik perolehan skor peserta Bebras Challenge 2024.</p>',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m4->id,
@@ -483,7 +486,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'pengumuman-2023',
             'judul' => 'Pengumuman Hasil 2023',
             'body' => '<p>Daftar pemenang dan statistik perolehan skor peserta Bebras Challenge 2023.</p>',
-            'urutan' => 2
+            'urutan' => 2,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m4->id,
@@ -491,14 +494,14 @@ class CmsContentSeeder extends Seeder
             'slug' => 'pengumuman-2022',
             'judul' => 'Pengumuman Hasil 2022',
             'body' => '<p>Daftar pemenang dan statistik perolehan skor peserta Bebras Challenge 2022.</p>',
-            'urutan' => 3
+            'urutan' => 3,
         ]);
 
         $m5 = MenuKegiatan::create([
             'nama_menu' => 'CT Challenge 2023 For Teachers',
             'slug' => 'ct-challenge-2023-for-teachers',
             'judul' => 'CT Challenge 2023 For Teachers',
-            'urutan' => 5
+            'urutan' => 5,
         ]);
         MenuKegiatan::create([
             'parent_id' => $m5->id,
@@ -506,14 +509,14 @@ class CmsContentSeeder extends Seeder
             'slug' => 'ct-challenge-pengumuman',
             'judul' => 'Pengumuman Hasil CT Challenge 2023 For Teachers',
             'body' => '<p>Daftar pemenang penghargaan nasional CT Challenge 2023 kategori Guru.</p>',
-            'urutan' => 1
+            'urutan' => 1,
         ]);
 
         MenuKegiatan::create([
             'nama_menu' => 'Gerakan Pandai',
             'slug'      => 'gerakan-pandai',
             'url'       => 'https://pandai.bebras.or.id/',
-            'urutan'    => 6
+            'urutan'    => 6,
         ]);
 
         // Link existing workshop_2017 kegiatans to menu_kegiatan slug='workshop-2017'

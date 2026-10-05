@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Berita;
 
 use App\Http\Controllers\Controller;
@@ -81,6 +80,7 @@ class BeritaAdminController extends Controller
                             </form>
                             <form action="' . $rejectUrl . '" method="POST" class="form-aksi-berita">
                                 ' . csrf_field() . '
+                                <input type="hidden" name="catatan_validasi" value="">
                                 <button type="button"
                                         class="btn btn-sm btn-secondary btn-aksi-berita"
                                         data-type="reject"
@@ -131,7 +131,9 @@ class BeritaAdminController extends Controller
             'urutan'           => 'nullable|integer',
         ]);
 
-        // Tidak menyentuh status_validasi — hanya diubah melalui approve/reject
+        // Tidak menyentuh status_validasi, tipe, dan dibuat_oleh
+        unset($validated['status_validasi'], $validated['tipe'], $validated['dibuat_oleh']);
+
         DB::beginTransaction();
         try {
             if ($request->hasFile('gambar')) {

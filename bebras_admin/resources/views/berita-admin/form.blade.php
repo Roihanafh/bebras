@@ -87,9 +87,16 @@
 
                         <div class="mb-3">
                             <label class="form-label">Tanggal &amp; Lokasi <small class="text-muted">(opsional)</small></label>
-                            <input type="text" name="tanggal_lokasi" class="form-control"
-                                   value="{{ old('tanggal_lokasi', $data->tanggal_lokasi) }}"
-                                   placeholder="Contoh: 15 Maret 2017, Hotel Santika Jakarta">
+                            @php
+                                $tglValue = old('tanggal_lokasi', $data->tanggal_lokasi ?? '');
+                                try {
+                                    $tglValue = $tglValue ? \Carbon\Carbon::parse($tglValue)->format('Y-m-d') : '';
+                                } catch (\Exception $e) {
+                                    $tglValue = '';
+                                }
+                            @endphp
+                            <input type="date" name="tanggal_lokasi" class="form-control"
+                                   value="{{ $tglValue }}">
                         </div>
 
                         <div class="mb-3">
