@@ -6,51 +6,52 @@
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <!-- Carousel -->
         <div id="default-carousel" class="relative" data-carousel="static">
-            <div class="overflow-hidden relative h-56 rounded-lg sm:h-64 xl:h-80 m-2">
+            {{-- Wrapper: tinggi otomatis via aspect-ratio CSS sesuai dimensi asli gambar 1920×770 --}}
+            <div class="carousel-wrapper overflow-hidden relative rounded-lg m-2">
                 @foreach ($banners as $index => $banner)
                 <!-- Item {{ $index + 1 }} -->
                 <div class="carousel-item duration-700 ease-in-out absolute inset-0 transition-all transform {{ $index === 0 ? 'opacity-1 z-10' : 'opacity-0' }}"
                     data-carousel-item>
                     <img src="{{ (strpos($banner->gambar, 'img/') === 0) ? asset($banner->gambar) : asset('storage/' . $banner->gambar) }}"
-                        class="block absolute top-1/2 left-1/2 w-full -translate-x-1/2 -translate-y-1/2 h-full"
+                        class="block w-full h-full object-contain bg-white"
                         alt="{{ $banner->judul }}">
-                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                        <div class="text-center text-white px-4">
-                            <h2 class="text-2xl md:text-3xl font-bold mb-2">{{ $banner->judul }}</h2>
-                            <p class="max-w-2xl">{{ $banner->deskripsi }}</p>
+                    <div class="absolute inset-0 flex items-end justify-center pb-8">
+                        <div class="text-center text-white px-4 bg-black/40 rounded-lg py-3 mx-4 w-full max-w-2xl">
+                            <h2 class="text-lg sm:text-2xl md:text-3xl font-bold mb-1">{{ $banner->judul }}</h2>
+                            <p class="text-sm sm:text-base max-w-2xl">{{ $banner->deskripsi }}</p>
                         </div>
                     </div>
                 </div>
                 @endforeach
-            </div>
 
-            <!-- Slider indicators -->
-            <div class="flex absolute bottom-5 left-1/2 z-30 space-x-3 -translate-x-1/2">
-                @foreach ($banners as $index => $banner)
-                <button type="button" class="w-3 h-3 rounded-full {{ $index === 0 ? 'bg-white' : 'bg-white/50' }}" aria-label="Slide {{ $index + 1 }}"
-                    data-carousel-slide-to="{{ $index }}"></button>
-                @endforeach
-            </div>
+                <!-- Slider indicators (dipindah ke dalam wrapper agar tdk overflow) -->
+                <div class="flex absolute bottom-4 left-1/2 z-30 space-x-3 -translate-x-1/2">
+                    @foreach ($banners as $index => $banner)
+                    <button type="button" class="w-3 h-3 rounded-full {{ $index === 0 ? 'bg-white' : 'bg-white/50' }}" aria-label="Slide {{ $index + 1 }}"
+                        data-carousel-slide-to="{{ $index }}"></button>
+                    @endforeach
+                </div>
 
-            <!-- Slider controls -->
-            <button type="button"
-                class="flex absolute top-0 left-0 z-30 justify-center items-center px-4 h-full cursor-pointer group focus:outline-none"
-                data-carousel-prev>
-                <span
-                    class="inline-flex justify-center items-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
-                    <i class="fas fa-chevron-left text-white"></i>
-                    <span class="sr-only">Previous</span>
-                </span>
-            </button>
-            <button type="button"
-                class="flex absolute top-0 right-0 z-30 justify-center items-center px-4 h-full cursor-pointer group focus:outline-none"
-                data-carousel-next>
-                <span
-                    class="inline-flex justify-center items-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
-                    <i class="fas fa-chevron-right text-white"></i>
-                    <span class="sr-only">Next</span>
-                </span>
-            </button>
+                <!-- Slider controls (dipindah ke dalam wrapper agar absolute relative ke wrapper) -->
+                <button type="button"
+                    class="flex absolute top-0 left-0 z-30 justify-center items-center px-4 h-full cursor-pointer group focus:outline-none"
+                    data-carousel-prev>
+                    <span
+                        class="inline-flex justify-center items-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
+                        <i class="fas fa-chevron-left text-white"></i>
+                        <span class="sr-only">Previous</span>
+                    </span>
+                </button>
+                <button type="button"
+                    class="flex absolute top-0 right-0 z-30 justify-center items-center px-4 h-full cursor-pointer group focus:outline-none"
+                    data-carousel-next>
+                    <span
+                        class="inline-flex justify-center items-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
+                        <i class="fas fa-chevron-right text-white"></i>
+                        <span class="sr-only">Next</span>
+                    </span>
+                </button>
+            </div>
         </div>
 
     </div>

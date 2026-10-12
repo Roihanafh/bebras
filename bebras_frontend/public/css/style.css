@@ -6,9 +6,52 @@ body {
     scroll-behavior: smooth;
 }
 
+/*
+ * Carousel wrapper: tinggi otomatis mengikuti aspect ratio asli gambar banner (1920 × 770).
+ *
+ * Menggunakan properti CSS `aspect-ratio` (bukan padding-top trick) karena:
+ * - padding-top % dihitung dari lebar PARENT/containing block, bukan dari lebar elemen sendiri.
+ * - Ketika elemen punya margin (m-2), lebarnya lebih kecil dari parent, sehingga
+ *   rasio tinggi menjadi tidak akurat → gambar menyentuh salah satu sisi.
+ * - `aspect-ratio` dihitung dari lebar elemen itu sendiri sehingga selalu presisi.
+ *
+ * Gambar di dalamnya menggunakan object-contain + bg-white sehingga area kosong
+ * (jika ada perbedaan aspect ratio) diisi putih, bukan hitam/transparan.
+ */
+.carousel-wrapper {
+    position: relative;
+    /* width: 100% DIHAPUS: menyebabkan overflow kanan karena margin (m-2) ditambahkan
+       di LUAR content area. Div block-level secara default menggunakan width:auto
+       yang berarti lebar = parent_width - margin_kiri - margin_kanan (tepat). */
+    aspect-ratio: 1920 / 770;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.carousel-wrapper > .carousel-item {
+    position: absolute;
+    inset: 0;
+}
+
+.carousel-wrapper > .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #ffffff;
+    display: block;
+}
+
+/* Mobile: pastikan carousel tidak terlalu kecil sehingga teks tetap terbaca */
+@media (max-width: 640px) {
+    .carousel-wrapper {
+        min-height: 180px;
+    }
+}
+
 .carousel-item {
     transition: opacity 0.7s ease-in-out;
 }
+
 
 .nav-link {
     position: relative;
