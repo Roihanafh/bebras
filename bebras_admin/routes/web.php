@@ -17,6 +17,7 @@ use App\Http\Controllers\TentangBebrasController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Berita\BeritaBiroController;
 use App\Http\Controllers\Berita\BeritaAdminController;
+use App\Http\Controllers\Pengumuman\PengumumanAdminController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -192,6 +193,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{id}', [BeritaAdminController::class, 'destroy'])->name('destroy');
     });
 
+    Route::prefix('admin/pengumuman')->name('admin.pengumuman.')->group(function () {
+        Route::get('/', [PengumumanAdminController::class, 'index'])->name('index');
+        Route::get('/list', [PengumumanAdminController::class, 'list'])->name('list');
+        Route::get('/create', [PengumumanAdminController::class, 'create'])->name('create');
+        Route::post('/', [PengumumanAdminController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PengumumanAdminController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PengumumanAdminController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PengumumanAdminController::class, 'destroy'])->name('destroy');
+    });
+
     // CMS Beranda
     Route::prefix('beranda')->name('beranda.')->group(function () {
         Route::get('/', [BerandaCmsController::class, 'index'])->name('index');
@@ -208,7 +219,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::delete('/{id}', [BerandaCmsController::class, 'kegiatanDestroy'])->name('destroy');
         });
     });
-
 });
 
 // Routes untuk role biro — dilindungi middleware auth + role:biro

@@ -20,6 +20,17 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get();
+        $pengumumans = Kegiatan::where('tipe', 'pengumuman')
+            ->where('status_validasi', 'approved')
+            ->orderBy('urutan', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+        $popupPengumuman = Kegiatan::where('tipe', 'pengumuman')
+            ->where('status_validasi', 'approved')
+            ->where('is_popup', true)
+            ->latest('created_at')
+            ->first();
         $aboutLogo = Setting::getByKey('home_about_logo', 'img/logo.jpg');
         $aboutContent = Setting::getByKey('home_about_content');
         $ctaTitle = Setting::getByKey('home_cta_title', 'Bebras Indonesia Challenge 2024');
@@ -31,6 +42,8 @@ class HomeController extends Controller
             'banners',
             'kegiatans',
             'beritas',
+            'pengumumans',
+            'popupPengumuman',
             'aboutLogo',
             'aboutContent',
             'ctaTitle',

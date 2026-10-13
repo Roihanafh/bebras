@@ -151,6 +151,64 @@
         </div>
     </section>
 
+    @if ($pengumumans->isNotEmpty())
+        <section class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
+                        <div class="h-1 w-24 bg-bebrasBlue mr-3"></div>
+                        Pengumuman
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach ($pengumumans as $pengumuman)
+                        @php
+                            $pengumumanTanggal = $pengumuman->tanggal_lokasi
+                                ? \Carbon\Carbon::parse($pengumuman->tanggal_lokasi)->translatedFormat('d F Y')
+                                : null;
+                            $pengumumanGambar = $pengumuman->gambar
+                                ? (str_starts_with($pengumuman->gambar, 'img/')
+                                    ? asset($pengumuman->gambar)
+                                    : asset('storage/' . $pengumuman->gambar))
+                                : null;
+                            $pengumumanData = json_encode([
+                                'id' => $pengumuman->id,
+                                'judul' => $pengumuman->judul,
+                                'gambar' => $pengumumanGambar,
+                                'kota' => $pengumuman->kota,
+                                'tanggal' => $pengumumanTanggal,
+                                'deskripsi' => $pengumuman->deskripsi,
+                            ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+                        @endphp
+                        <article class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">
+                            <div class="h-48 overflow-hidden">
+                                @if ($pengumumanGambar)
+                                    <img src="{{ $pengumumanGambar }}" alt="{{ $pengumuman->judul }}" class="w-full h-full object-cover">
+                                @else
+                                    <div class="w-full h-full bg-blue-50 flex items-center justify-center">
+                                        <i class="fas fa-bell text-3xl text-bebrasBlue"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="p-6 flex flex-col flex-1">
+                                <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $pengumuman->judul }}</h3>
+                                @if ($pengumumanTanggal)
+                                    <p class="text-gray-500 text-xs mb-3">{{ $pengumumanTanggal }}</p>
+                                @endif
+                                <p class="text-gray-600 text-sm">{{ \Illuminate\Support\Str::limit(strip_tags($pengumuman->deskripsi), 160) }}</p>
+                                <button type="button" onclick='openPengumumanModal({!! $pengumumanData !!})'
+                                    class="mt-auto pt-4 text-left text-xs font-semibold text-bebrasDarkBlue hover:text-bebrasBlue inline-flex items-center gap-1">
+                                    Lihat selengkapnya <i class="fas fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     <section class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-8">
@@ -255,6 +313,34 @@
             </div>
             <div class="bg-gray-50 px-6 py-4 border-t flex justify-end">
                 <button type="button" onclick="closeBeritaModal()"
+                    class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pengumumanModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-black/60 backdrop-blur-sm items-center justify-center p-4"
+        onclick="closePengumumanModal()">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-8" onclick="event.stopPropagation()">
+            <div class="relative bg-gradient-to-r from-bebrasDarkBlue to-bebrasBlue p-6 text-white">
+                <button type="button" onclick="closePengumumanModal()"
+                    class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="inline-block text-xs font-semibold uppercase bg-white/20 px-2.5 py-1 rounded-full mb-2">Pengumuman</span>
+                <h3 id="pengumumanModalJudul" class="text-xl md:text-2xl font-bold leading-tight pr-8"></h3>
+            </div>
+            <div class="p-6 max-h-[75vh] overflow-y-auto">
+                <img id="pengumumanModalGambar" src="" alt="" class="w-full max-h-80 object-cover rounded-xl shadow mb-4 hidden">
+                <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4 pb-4 border-b">
+                    <span id="pengumumanModalTanggal" class="hidden items-center gap-1.5 font-medium"></span>
+                    <span id="pengumumanModalKota" class="hidden items-center gap-1.5"></span>
+                </div>
+                <div id="pengumumanModalDeskripsi" class="prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base"></div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t flex justify-end">
+                <button type="button" onclick="closePengumumanModal()"
                     class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition text-sm">
                     Tutup
                 </button>
@@ -442,6 +528,36 @@
     @push('scripts')
         <script src="{{ asset('js/script.js') }}"></script>
         <script>
+            function openPengumumanModal(data) {
+                document.getElementById('pengumumanModalJudul').innerText = data.judul || '';
+                document.getElementById('pengumumanModalDeskripsi').innerHTML = data.deskripsi || '';
+
+                const gambar = document.getElementById('pengumumanModalGambar');
+                gambar.src = data.gambar || '';
+                gambar.alt = data.judul || '';
+                gambar.classList.toggle('hidden', !data.gambar);
+
+                const tanggal = document.getElementById('pengumumanModalTanggal');
+                tanggal.innerHTML = data.tanggal ? '<span>📅</span> ' + data.tanggal : '';
+                tanggal.classList.toggle('hidden', !data.tanggal);
+                tanggal.classList.toggle('flex', Boolean(data.tanggal));
+
+                const kota = document.getElementById('pengumumanModalKota');
+                kota.innerHTML = data.kota ? '<span>📍</span> ' + data.kota : '';
+                kota.classList.toggle('hidden', !data.kota);
+                kota.classList.toggle('flex', Boolean(data.kota));
+
+                document.getElementById('pengumumanModal').classList.remove('hidden');
+                document.getElementById('pengumumanModal').classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closePengumumanModal() {
+                document.getElementById('pengumumanModal').classList.add('hidden');
+                document.getElementById('pengumumanModal').classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+
             function openBeritaModal(data) {
                 document.getElementById('beritaModalJudul').innerText = data.judul || '';
                 document.getElementById('beritaModalDeskripsi').innerHTML = data.deskripsi || '';
@@ -472,8 +588,37 @@
             document.addEventListener('keydown', function (event) {
                 if (event.key === 'Escape') {
                     closeBeritaModal();
+                    closePengumumanModal();
                 }
             });
+
+            @php
+                $popupData = null;
+                if ($popupPengumuman) {
+                    $popupData = [
+                        'id' => $popupPengumuman->id,
+                        'judul' => $popupPengumuman->judul,
+                        'gambar' => $popupPengumuman->gambar
+                            ? (str_starts_with($popupPengumuman->gambar, 'img/')
+                                ? asset($popupPengumuman->gambar)
+                                : asset('storage/' . $popupPengumuman->gambar))
+                            : null,
+                        'kota' => $popupPengumuman->kota,
+                        'tanggal' => $popupPengumuman->tanggal_lokasi
+                            ? \Carbon\Carbon::parse($popupPengumuman->tanggal_lokasi)->translatedFormat('d F Y')
+                            : null,
+                        'deskripsi' => $popupPengumuman->deskripsi,
+                    ];
+                }
+            @endphp
+            @if ($popupData)
+                const popupPengumuman = @json($popupData);
+                const popupKey = 'bebras-popup-pengumuman-' + popupPengumuman.id;
+                if (!sessionStorage.getItem(popupKey)) {
+                    sessionStorage.setItem(popupKey, 'shown');
+                    openPengumumanModal(popupPengumuman);
+                }
+            @endif
         </script>
     @endpush
 

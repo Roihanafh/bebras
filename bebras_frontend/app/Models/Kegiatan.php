@@ -16,6 +16,7 @@ class Kegiatan extends Model
         'menu_kegiatan_id',
         'tipe',
         'status_validasi',
+        'is_popup',
         'judul',
         'deskripsi',
         'gambar',
@@ -27,6 +28,10 @@ class Kegiatan extends Model
         'divalidasi_oleh',
         'divalidasi_pada',
         'catatan_validasi',
+    ];
+
+    protected $casts = [
+        'is_popup' => 'boolean',
     ];
 
     public function menuKegiatan(): BelongsTo

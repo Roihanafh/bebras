@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Berita;
 
 use App\Http\Controllers\Controller;
@@ -121,7 +122,7 @@ class BeritaAdminController extends Controller
         $data = Kegiatan::findOrFail($id);
 
         $validated = $request->validate([
-            'menu_kegiatan_id' => 'required|exists:menu_kegiatan,id',
+            'menu_kegiatan_id' => 'nullable|exists:menu_kegiatan,id',
             'judul'            => 'required|string|max:255',
             'deskripsi'        => 'required|string',
             'gambar'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',

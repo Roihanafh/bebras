@@ -23,10 +23,15 @@ class Kegiatan extends Model
         'speaker',
         'urutan',
         'status_validasi',
+        'is_popup',
         'dibuat_oleh',
         'divalidasi_oleh',
         'divalidasi_pada',
         'catatan_validasi',
+    ];
+
+    protected $casts = [
+        'is_popup' => 'boolean',
     ];
 
     public function menuKegiatan(): BelongsTo

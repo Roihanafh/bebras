@@ -29,24 +29,6 @@
                             @csrf
                             @if(isset($berita)) @method('PUT') @endif
 
-                            {{-- Menu Kegiatan --}}
-                            <div class="mb-3">
-                                <label class="form-label">Menu Kegiatan <span class="text-danger">*</span></label>
-                                <select name="menu_kegiatan_id" class="form-select" required>
-                                    <option value="">-- Pilih Menu Kegiatan --</option>
-                                    @foreach($menuList as $menu)
-                                        <option value="{{ $menu->id }}"
-                                            {{ old('menu_kegiatan_id', $berita->menu_kegiatan_id ?? '') == $menu->id ? 'selected' : '' }}>
-                                            @if($menu->parent_id)
-                                                &nbsp;&nbsp;&nbsp;↳ {{ $menu->parent?->nama_menu }} / {{ $menu->nama_menu }}
-                                            @else
-                                                {{ $menu->nama_menu }}
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
                             {{-- Judul --}}
                             <div class="mb-3">
                                 <label class="form-label">Judul <span class="text-danger">*</span></label>

@@ -133,6 +133,13 @@
                 </a>
             </li>
 
+            <li class="menu-item {{ Route::is('admin.pengumuman.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pengumuman.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-bell"></i>
+                    <div data-i18n="Pengumuman">Pengumuman</div>
+                </a>
+            </li>
+
             {{-- 
             <!-- Pengaturan Situs (Dihidden sementara) -->
             <li class="menu-item {{ Route::is('setting.*') ? 'active' : '' }}">

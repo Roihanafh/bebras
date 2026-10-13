@@ -113,7 +113,7 @@ class BeritaBiroController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'menu_kegiatan_id' => 'required|exists:menu_kegiatan,id',
+            'menu_kegiatan_id' => 'nullable|exists:menu_kegiatan,id',
             'judul'            => 'required|string|max:255',
             'deskripsi'        => 'required|string',
             'gambar'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
@@ -170,7 +170,7 @@ class BeritaBiroController extends Controller
         }
 
         $validated = $request->validate([
-            'menu_kegiatan_id' => 'required|exists:menu_kegiatan,id',
+            'menu_kegiatan_id' => 'nullable|exists:menu_kegiatan,id',
             'judul'            => 'required|string|max:255',
             'deskripsi'        => 'required|string',
             'gambar'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
