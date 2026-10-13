@@ -6,7 +6,7 @@
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <!-- Carousel -->
         <div id="default-carousel" class="relative" data-carousel="static">
-            {{-- Wrapper: tinggi otomatis via aspect-ratio CSS sesuai dimensi asli gambar 1920×770 --}}
+            {{-- Wrapper: tinggi otomatis via aspect-ratio CSS sesuai dimensi asli gambar 1920Ã—770 --}}
             <div class="carousel-wrapper overflow-hidden relative rounded-lg m-2">
                 @foreach ($banners as $index => $banner)
                 <!-- Item {{ $index + 1 }} -->
@@ -80,8 +80,58 @@
         </div>
     </section>
 
-    <section class="py-12 bg-bebrasLightBlue rounded-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-12 rounded-lg overflow-hidden relative" style="background-color: #E6F7FF;">
+        {{-- Decorative background: hex-dot grid + arc + diagonal lines + plus signs --}}
+        <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            {{-- Hex dot grid --}}
+            <svg class="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="kegiatan-hex" x="0" y="0" width="40" height="46" patternUnits="userSpaceOnUse">
+                        <circle cx="20" cy="8"  r="2.5" fill="#0099CC"/>
+                        <circle cx="0"  cy="23" r="2.5" fill="#0099CC"/>
+                        <circle cx="40" cy="23" r="2.5" fill="#0099CC"/>
+                        <circle cx="20" cy="38" r="2.5" fill="#0099CC"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#kegiatan-hex)"/>
+            </svg>
+            {{-- Large arc top-right --}}
+            <svg class="absolute -top-10 -right-10 opacity-10 w-56" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="200" cy="0" r="140" stroke="#00CAFF" stroke-width="18" fill="none"/>
+            </svg>
+            {{-- Small arc bottom-left --}}
+            <svg class="absolute -bottom-8 -left-8 opacity-10 w-40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="200" r="110" stroke="#0099CC" stroke-width="14" fill="none"/>
+            </svg>
+            {{-- Diagonal hatching top-left --}}
+            <svg class="absolute top-0 left-0 opacity-[0.06] w-48 h-48" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <line x1="0"   y1="40"  x2="40"  y2="0"   stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="0"   y1="80"  x2="80"  y2="0"   stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="0"   y1="120" x2="120" y2="0"   stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="0"   y1="160" x2="160" y2="0"   stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="0"   y1="200" x2="200" y2="0"   stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="40"  y1="200" x2="200" y2="40"  stroke="#0099CC" stroke-width="1.5"/>
+                <line x1="80"  y1="200" x2="200" y2="80"  stroke="#0099CC" stroke-width="1.5"/>
+            </svg>
+            {{-- Plus signs cluster bottom-right --}}
+            <svg class="absolute bottom-6 right-8 opacity-[0.15] w-28" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                <line x1="10" y1="6"   x2="10" y2="18"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="4"  y1="12"  x2="16" y2="12"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="40" y1="6"   x2="40" y2="18"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="34" y1="12"  x2="46" y2="12"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="70" y1="6"   x2="70" y2="18"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="64" y1="12"  x2="76" y2="12"  stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="100" y1="6"  x2="100" y2="18" stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="94"  y1="12" x2="106" y2="12" stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+                <line x1="25" y1="38"  x2="25" y2="50"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+                <line x1="19" y1="44"  x2="31" y2="44"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+                <line x1="55" y1="38"  x2="55" y2="50"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+                <line x1="49" y1="44"  x2="61" y2="44"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+                <line x1="85" y1="38"  x2="85" y2="50"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+                <line x1="79" y1="44"  x2="91" y2="44"  stroke="#0099CC" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-12">Kegiatan Bebras Indonesia?</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center">
@@ -226,6 +276,169 @@
             </div>
         </div>
     </div>
+    {{-- ===== SECTION MITRA KAMI ===== --}}
+    @if($mitras->isNotEmpty())
+    <section class="py-14 rounded-xl overflow-hidden relative" style="background-color: #D6EEFF;">
+
+        {{-- Decorative background accents (wave lines + diamonds, like reference image) --}}
+        <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            {{-- Wave lines top-left --}}
+            <svg class="absolute top-4 left-4 opacity-20 w-28" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,10 Q30,0 60,10 Q90,20 120,10" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+                <path d="M0,25 Q30,15 60,25 Q90,35 120,25" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+                <path d="M0,40 Q30,30 60,40 Q90,50 120,40" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+            </svg>
+            {{-- Diamond top-right --}}
+            <svg class="absolute top-6 right-8 opacity-20 w-8" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="20,2 38,20 20,38 2,20" stroke="#00CAFF" stroke-width="2.5" fill="none"/>
+            </svg>
+            <svg class="absolute top-12 right-20 opacity-15 w-4" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="20,2 38,20 20,38 2,20" stroke="#00CAFF" stroke-width="2" fill="none"/>
+            </svg>
+            {{-- Diamond bottom-left --}}
+            <svg class="absolute bottom-8 left-16 opacity-15 w-5" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="20,2 38,20 20,38 2,20" stroke="#0099CC" stroke-width="2" fill="none"/>
+            </svg>
+            {{-- Wave lines bottom-right --}}
+            <svg class="absolute bottom-4 right-4 opacity-20 w-24" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,10 Q30,0 60,10 Q90,20 120,10" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+                <path d="M0,25 Q30,15 60,25 Q90,35 120,25" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+                <path d="M0,40 Q30,30 60,40 Q90,50 120,40" stroke="#0099CC" stroke-width="2.5" fill="none"/>
+            </svg>
+            {{-- Dot cluster center-left --}}
+            <svg class="absolute top-1/2 left-6 -translate-y-1/2 opacity-20 w-6" viewBox="0 0 30 50" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="5" cy="5" r="3" fill="#0099CC"/>
+                <circle cx="20" cy="5" r="3" fill="#0099CC"/>
+                <circle cx="5" cy="20" r="3" fill="#0099CC"/>
+                <circle cx="20" cy="20" r="3" fill="#0099CC"/>
+                <circle cx="5" cy="35" r="3" fill="#0099CC"/>
+                <circle cx="20" cy="35" r="3" fill="#0099CC"/>
+            </svg>
+        </div>
+
+        <div class="relative max-w-6xl mx-auto px-10 sm:px-14">
+
+            {{-- Section Header: mascot image + bold title, centered --}}
+            <div class="flex flex-col items-center mb-3">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <img src="{{ asset('img/logo.jpg') }}"
+                         alt="Logo Bebras Indonesia"
+                         class="w-12 h-12 rounded-md object-cover"
+                         loading="lazy">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight">
+                        Mitra Kami
+                    </h2>
+                </div>
+                <p class="text-gray-500 text-sm">
+                    Kolaborasi bersama untuk masa depan generasi digital Indonesia.
+                </p>
+            </div>
+
+            {{-- Spacer --}}
+            <div class="mt-10"></div>
+
+            {{-- Mitra row: left arrow | items with vertical dividers | right arrow --}}
+            <div class="flex items-center gap-2 sm:gap-4">
+
+                {{-- Left nav arrow --}}
+                <button type="button" id="mitraScrollLeft"
+                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white/80 border border-slate-200 shadow
+                               flex items-center justify-center text-slate-500
+                               hover:bg-white hover:text-[#00CAFF] hover:border-[#00CAFF]
+                               transition-all duration-200 focus:outline-none"
+                        aria-label="Geser kiri">
+                    <i class="fas fa-chevron-left text-sm"></i>
+                </button>
+
+                {{-- Scrollable mitra track --}}
+                <div id="mitraTrack"
+                     class="flex-1 overflow-x-auto scrollbar-hide"
+                     style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <div class="flex items-stretch min-w-max mx-auto" id="mitraList">
+                        @foreach ($mitras as $index => $mitra)
+
+                        {{-- Vertical divider before every item except the first --}}
+                        @if($index > 0)
+                        <div class="self-stretch flex items-center" aria-hidden="true">
+                            <div class="w-px h-20 bg-slate-200/80 my-auto"></div>
+                        </div>
+                        @endif
+
+                        {{-- Mitra item --}}
+                        <div class="group flex flex-col items-center justify-center gap-4 px-10 py-2
+                                    transition-all duration-300 cursor-default">
+
+                            {{-- Circular badge --}}
+                            <div class="flex-shrink-0
+                                        w-[120px] h-[120px] rounded-full
+                                        bg-white border-2 border-slate-200 shadow-md
+                                        flex items-center justify-center p-4
+                                        transition-all duration-300 ease-in-out
+                                        group-hover:scale-110
+                                        group-hover:border-[#00C3FF]
+                                        group-hover:ring-[5px] group-hover:ring-[#00C3FF]/20
+                                        group-hover:shadow-xl">
+
+                                @if($mitra->logo)
+                                    <img src="{{ asset('storage/' . $mitra->logo) }}"
+                                         alt="{{ $mitra->nama }}"
+                                         class="max-w-full max-h-full object-contain block">
+                                @else
+                                    {{-- Placeholder: gradient + initials --}}
+                                    <div class="w-full h-full rounded-full flex items-center justify-center
+                                                bg-gradient-to-br from-[#D6EEFF] to-[#B3DFFF]">
+                                        <span class="text-[#0099CC] font-bold text-xl leading-none select-none">
+                                            {{ strtoupper(substr(trim($mitra->nama), 0, 2)) }}
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Mitra name --}}
+                            <p class="text-sm text-center font-medium text-slate-700 leading-snug
+                                      transition-colors duration-300
+                                      group-hover:text-[#00CAFF] group-hover:font-semibold
+                                      max-w-[130px]">
+                                {{ $mitra->nama }}
+                            </p>
+                        </div>
+
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Right nav arrow --}}
+                <button type="button" id="mitraScrollRight"
+                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white/80 border border-slate-200 shadow
+                               flex items-center justify-center text-slate-500
+                               hover:bg-white hover:text-[#00CAFF] hover:border-[#00CAFF]
+                               transition-all duration-200 focus:outline-none"
+                        aria-label="Geser kanan">
+                    <i class="fas fa-chevron-right text-sm"></i>
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Mitra scroll script --}}
+    <style>
+        #mitraTrack::-webkit-scrollbar { display: none; }
+    </style>
+    <script>
+        (function () {
+            var track = document.getElementById('mitraTrack');
+            document.getElementById('mitraScrollLeft').addEventListener('click', function () {
+                track.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+            document.getElementById('mitraScrollRight').addEventListener('click', function () {
+                track.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+        })();
+    </script>
+    @endif
+    {{-- ===== END SECTION MITRA KAMI ===== --}}
+
     @push('scripts')
         <script src="{{ asset('js/script.js') }}"></script>
         <script>

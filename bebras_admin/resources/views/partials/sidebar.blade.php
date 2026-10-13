@@ -85,6 +85,14 @@
                 </a>
             </li>
 
+            <!-- Mitra -->
+            <li class="menu-item {{ Route::is('mitra.*') ? 'active' : '' }}">
+                <a href="{{ route('mitra.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-building"></i>
+                    <div data-i18n="Mitra">Mitra</div>
+                </a>
+            </li>
+
             <!-- Banner -->
             <li class="menu-item {{ Route::is('banner.*') ? 'active' : '' }}">
                 <a href="{{ route('banner.index') }}" class="menu-link">

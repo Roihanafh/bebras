@@ -7,6 +7,7 @@ use App\Http\Controllers\MenuKegiatanController;
 use App\Http\Controllers\BerandaCmsController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\LatihanController;
+use App\Http\Controllers\MitraController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SoalBookController;
@@ -112,6 +113,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/{id}/update', [LatihanController::class, 'update'])->name('latihan.update');
         Route::delete('/{id}', [LatihanController::class, 'destroy'])->name('latihan.destroy');
         Route::get('/{id}/deskripsi', [LatihanController::class, 'deskripsi'])->name('latihan.deskripsi');
+    });
+
+    Route::prefix('mitra')->group(function () {
+        Route::get('/', [MitraController::class, 'index'])->name('mitra.index');
+        Route::get('/list', [MitraController::class, 'list'])->name('mitra.list');
+        Route::post('/store', [MitraController::class, 'store'])->name('mitra.store');
+        Route::get('/{id}/edit', [MitraController::class, 'edit'])->name('mitra.edit');
+        Route::post('/{id}/update', [MitraController::class, 'update'])->name('mitra.update');
+        Route::delete('/{id}', [MitraController::class, 'destroy'])->name('mitra.destroy');
     });
 
     // Statistik Bebras Indonesia Challenge

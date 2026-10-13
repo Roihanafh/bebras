@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Banner;
 use App\Models\Setting;
 use App\Models\Kegiatan;
+use App\Models\Mitra;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -24,6 +25,7 @@ class HomeController extends Controller
         $ctaTitle = Setting::getByKey('home_cta_title', 'Bebras Indonesia Challenge 2024');
         $ctaDescription = Setting::getByKey('home_cta_description');
         $ctaLink = Setting::getByKey('home_cta_link', '#');
+        $mitras = Mitra::orderBy('urutan', 'asc')->get();
 
         return view('pages.home', compact(
             'banners',
@@ -33,7 +35,8 @@ class HomeController extends Controller
             'aboutContent',
             'ctaTitle',
             'ctaDescription',
-            'ctaLink'
+            'ctaLink',
+            'mitras'
         ));
     }
 }
