@@ -198,6 +198,15 @@ class CmsContentSeeder extends Seeder
             ['tipe' => 'timeline', 'judul' => 'November 2016', 'deskripsi' => 'Untuk pertama kalinya, Indonesia berpartisipasi dalam <strong>Bebras Challenge</strong> sesuai jadwal Komite Internasional Bebras, pada bulan November 2016.', 'urutan' => 3],
         ]);
 
+        // dd_7
+        $dd7 = TentangBebras::create([
+            'slug' => 'dd_7',
+            'judul' => 'Koordinator Bebras Biro',
+            'konten' => '<p>Berikut adalah daftar Bebras Biro dan koordinatornya masing-masing.</p>',
+            'urutan' => 7,
+            'template' => 'dd_7'
+        ]);
+
         // === 5. Soal Pages (menu_soal) ===
         // index-soal
         $indexSoal = MenuSoal::create([

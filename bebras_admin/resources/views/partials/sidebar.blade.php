@@ -51,6 +51,14 @@
                     <div data-i18n="Analytics">Tentang Bebras</div>
                 </a>
             </li>
+
+            <!-- Biro -->
+            <li class="menu-item {{ Route::is('biro.*') ? 'active' : '' }}">
+                <a href="{{ route('biro.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-buildings"></i>
+                    <div data-i18n="Biro">Biro</div>
+                </a>
+            </li>
             @php
                 $isSoalActive = Route::is('soal_bebras.*') || Route::is('soal_book.*') || Route::is('form-soal-bebras');
             @endphp

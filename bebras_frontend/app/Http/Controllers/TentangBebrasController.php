@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TentangBebras;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TentangBebrasController extends Controller
@@ -16,6 +17,14 @@ class TentangBebrasController extends Controller
         if (!view()->exists($viewName)) {
             $viewName = 'pages.tentangBebras.dd_1';
         }
-        return view($viewName, compact('page'));
+
+        $biros = collect();
+        if ($template === 'dd_7' || str_contains($slug, 'biro')) {
+            $biros = User::whereHas('roles', function ($q) {
+                $q->where('name', 'biro');
+            })->with('koordinatorBiro')->orderByRaw('kode_biro IS NULL, kode_biro ASC, name ASC')->get();
+        }
+
+        return view($viewName, compact('page', 'biros'));
     }
 }

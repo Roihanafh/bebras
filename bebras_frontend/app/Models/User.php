@@ -18,9 +18,26 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'kode_biro',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function koordinatorBiro()
+    {
+        return $this->hasMany(KoordinatorBiro::class, 'user_id');
+    }
+
+    public function hasRole($role)
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
 
     /**
      * The attributes that should be hidden for serialization.

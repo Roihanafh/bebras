@@ -94,6 +94,14 @@
                                 <input type="password" class="form-control" name="password" />
                             </div>
                         </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Kode Biro</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="kode_biro" maxlength="3" placeholder="Opsional, 3 digit (contoh: 001)" />
+                                <div class="form-text">Diisi jika akun berperan sebagai biro.</div>
+                            </div>
+                        </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
@@ -194,6 +202,7 @@
             $('#edit_username').val(res.user.username);
             $('#edit_email').val(res.user.email);
             $('#edit_password').val('');
+            $('#edit_kode_biro').val(res.user.kode_biro || '');
 
             $('#edit_role_id').empty();
             $.each(res.roles, function(i, role) {

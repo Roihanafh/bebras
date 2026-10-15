@@ -49,6 +49,15 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                        <label class="col-sm-2 col-form-label">Kode Biro</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="kode_biro" id="edit_kode_biro" class="form-control"
+                                maxlength="3" placeholder="Opsional, 3 digit (contoh: 001)">
+                            <div class="form-text">Diisi jika akun berperan sebagai biro.</div>
+                        </div>
+                    </div>
+
                     <div class="text-end">
                         <button type="submit" class="btn btn-primary">Update</button>
                     </div>

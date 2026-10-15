@@ -22,11 +22,17 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'kode_biro',
     ];
 
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function koordinatorBiro()
+    {
+        return $this->hasMany(KoordinatorBiro::class, 'user_id');
     }
 
     public function hasRole($role)

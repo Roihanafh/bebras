@@ -15,6 +15,7 @@ use App\Http\Controllers\SoalController;
 use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\TentangBebrasController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BiroController;
 use App\Http\Controllers\Berita\BeritaBiroController;
 use App\Http\Controllers\Berita\BeritaAdminController;
 use App\Http\Controllers\Pengumuman\PengumumanAdminController;
@@ -40,6 +41,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/{user}/edit', [RegisterController::class, 'edit'])->name('edit.akun');
         Route::put('/{user}', [RegisterController::class, 'update'])->name('update.akun');
         Route::delete('/{user}', [RegisterController::class, 'destroy'])->name('destroy.akun');
+    });
+
+    // Manajemen Biro & Koordinator
+    Route::prefix('biro')->name('biro.')->group(function () {
+        Route::get('/', [BiroController::class, 'index'])->name('index');
+        Route::get('/list', [BiroController::class, 'list'])->name('list');
+        Route::put('/{id}/kode', [BiroController::class, 'updateKodeBiro'])->name('updateKode');
+        Route::get('/{id}/koordinator', [BiroController::class, 'getKoordinator'])->name('koordinator.get');
+        Route::post('/{id}/koordinator', [BiroController::class, 'storeKoordinator'])->name('koordinator.store');
+        Route::put('/koordinator/{id}', [BiroController::class, 'updateKoordinator'])->name('koordinator.update');
+        Route::delete('/koordinator/{id}', [BiroController::class, 'destroyKoordinator'])->name('koordinator.destroy');
     });
 
     Route::prefix('tentang-bebras')->group(function () {

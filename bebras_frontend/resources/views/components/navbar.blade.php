@@ -35,7 +35,7 @@
                                 @foreach (\App\Models\TentangBebras::orderBy('urutan', 'asc')->get() as $tbPage)
                                 <li>
                                     @php
-                                        $isHardcoded = in_array($tbPage->slug, ['dd_1', 'dd_2', 'dd_3', 'dd_4', 'dd_5', 'dd_6']);
+                                        $isHardcoded = in_array($tbPage->slug, ['dd_1', 'dd_2', 'dd_3', 'dd_4', 'dd_5', 'dd_6', 'dd_7']);
                                         $routeUrl = $isHardcoded ? route('tentangBebras.' . $tbPage->slug) : route('tentangBebras.show', $tbPage->slug);
                                         $isActive = request()->is('tentangBebras/' . $tbPage->slug);
                                     @endphp

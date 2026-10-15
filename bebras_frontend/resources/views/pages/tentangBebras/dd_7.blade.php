@@ -23,17 +23,40 @@
                 </div>
             @endif
 
-            @if ($page->konten)
-                <div class="mx-auto mt-10 max-w-4xl rounded-2xl border border-cyan-100 bg-white px-6 py-6 md:px-10 shadow-sm">
-                    <div class="mb-3 flex items-center gap-3 text-[#087E9B]">
-                        <span class="h-2 w-10 rounded-full bg-[#F7C948]"></span>
-                        <span class="text-sm font-bold uppercase tracking-widest">Koordinator Bebras Biro</span>
-                    </div>
-                    <div class="biro-content prose max-w-none text-base leading-relaxed text-gray-600 md:text-lg">
-                        {!! $page->konten !!}
-                    </div>
+            <div class="mx-auto mt-10 max-w-4xl rounded-2xl border border-cyan-100 bg-white px-6 py-6 md:px-10 shadow-sm">
+                <div class="mb-3 flex items-center gap-3 text-[#087E9B]">
+                    <span class="h-2 w-10 rounded-full bg-[#F7C948]"></span>
+                    <span class="text-sm font-bold uppercase tracking-widest">Koordinator Bebras Biro</span>
                 </div>
-            @endif
+                <div class="biro-content prose max-w-none text-base leading-relaxed text-gray-600 md:text-lg">
+                    @if ($page->konten)
+                        @php
+                            $intro = preg_replace('/<ol.*<\/ol>/is', '', $page->konten);
+                        @endphp
+                        @if(trim(strip_tags($intro)))
+                            <div class="mb-4">
+                                {!! $intro !!}
+                            </div>
+                        @endif
+                    @endif
+
+                    <ol>
+                        @forelse($biros as $biro)
+                            <li>
+                                <span class="font-semibold text-gray-800">{{ $biro->name }}</span>
+                                @if($biro->koordinatorBiro && $biro->koordinatorBiro->count() > 0)
+                                    @foreach($biro->koordinatorBiro as $koordinator)
+                                        <span class="text-gray-400 mx-1">|</span>
+                                        <a href="mailto:{{ $koordinator->email }}" title="{{ $koordinator->email }}">{{ $koordinator->nama }}</a>
+                                    @endforeach
+                                @endif
+                            </li>
+                        @empty
+                            <li class="text-gray-500 italic">Belum ada biro terdaftar.</li>
+                        @endforelse
+                    </ol>
+                </div>
+            </div>
         </div>
     </section>
 

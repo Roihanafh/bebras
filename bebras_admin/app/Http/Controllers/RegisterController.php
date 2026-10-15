@@ -38,18 +38,20 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required',
-            'roles'    => 'required',
+            'name'      => 'required|string|max:255',
+            'username'  => 'required|string|max:255|unique:users,username',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required',
+            'roles'     => 'required',
+            'kode_biro' => 'nullable|string|max:3',
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'username' => $request->username,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'name'      => $request->name,
+            'username'  => $request->username,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'kode_biro' => $request->kode_biro ?: null,
         ]);
 
         $user->roles()->attach($request->roles);
@@ -73,16 +75,20 @@ class RegisterController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email'    => 'required|email|unique:users,email,' . $user->id,
-            'role_id'  => 'required',
-            'password' => 'nullable|min:6',
+            'name'      => 'required|string|max:255',
+            'username'  => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email'     => 'required|email|unique:users,email,' . $user->id,
+            'role_id'   => 'required',
+            'password'  => 'nullable|min:6',
+            'kode_biro' => 'nullable|string|max:3',
         ]);
 
         $user->name     = $request->name;
         $user->username = $request->username;
         $user->email    = $request->email;
+        if ($request->has('kode_biro')) {
+            $user->kode_biro = $request->kode_biro ?: null;
+        }
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -92,6 +98,13 @@ class RegisterController extends Controller
 
         // update role (sync, bukan attach biar tidak dobel)
         $user->roles()->sync([$request->role_id]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User berhasil diperbarui'
+            ]);
+        }
 
         return redirect()->route('register')
             ->with('success', 'User berhasil diperbarui');
