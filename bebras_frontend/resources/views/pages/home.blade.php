@@ -364,45 +364,8 @@
     </div>
     {{-- ===== SECTION MITRA KAMI ===== --}}
     @if($mitras->isNotEmpty())
-    <section class="py-14 rounded-xl overflow-hidden relative" style="background-color: #D6EEFF;">
-
-        {{-- Decorative background accents (wave lines + diamonds, like reference image) --}}
-        <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            {{-- Wave lines top-left --}}
-            <svg class="absolute top-4 left-4 opacity-20 w-28" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,10 Q30,0 60,10 Q90,20 120,10" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-                <path d="M0,25 Q30,15 60,25 Q90,35 120,25" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-                <path d="M0,40 Q30,30 60,40 Q90,50 120,40" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-            </svg>
-            {{-- Diamond top-right --}}
-            <svg class="absolute top-6 right-8 opacity-20 w-8" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="20,2 38,20 20,38 2,20" stroke="#00CAFF" stroke-width="2.5" fill="none"/>
-            </svg>
-            <svg class="absolute top-12 right-20 opacity-15 w-4" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="20,2 38,20 20,38 2,20" stroke="#00CAFF" stroke-width="2" fill="none"/>
-            </svg>
-            {{-- Diamond bottom-left --}}
-            <svg class="absolute bottom-8 left-16 opacity-15 w-5" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="20,2 38,20 20,38 2,20" stroke="#0099CC" stroke-width="2" fill="none"/>
-            </svg>
-            {{-- Wave lines bottom-right --}}
-            <svg class="absolute bottom-4 right-4 opacity-20 w-24" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,10 Q30,0 60,10 Q90,20 120,10" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-                <path d="M0,25 Q30,15 60,25 Q90,35 120,25" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-                <path d="M0,40 Q30,30 60,40 Q90,50 120,40" stroke="#0099CC" stroke-width="2.5" fill="none"/>
-            </svg>
-            {{-- Dot cluster center-left --}}
-            <svg class="absolute top-1/2 left-6 -translate-y-1/2 opacity-20 w-6" viewBox="0 0 30 50" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="5" cy="5" r="3" fill="#0099CC"/>
-                <circle cx="20" cy="5" r="3" fill="#0099CC"/>
-                <circle cx="5" cy="20" r="3" fill="#0099CC"/>
-                <circle cx="20" cy="20" r="3" fill="#0099CC"/>
-                <circle cx="5" cy="35" r="3" fill="#0099CC"/>
-                <circle cx="20" cy="35" r="3" fill="#0099CC"/>
-            </svg>
-        </div>
-
-        <div class="relative max-w-6xl mx-auto px-10 sm:px-14">
+    <section class="py-14 bg-white rounded-xl">
+        <div class="max-w-6xl mx-auto px-10 sm:px-14">
 
             {{-- Section Header: mascot image + bold title, centered --}}
             <div class="flex flex-col items-center mb-3">
@@ -428,9 +391,9 @@
 
                 {{-- Left nav arrow --}}
                 <button type="button" id="mitraScrollLeft"
-                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white/80 border border-slate-200 shadow
+                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm
                                flex items-center justify-center text-slate-500
-                               hover:bg-white hover:text-[#00CAFF] hover:border-[#00CAFF]
+                               hover:bg-slate-50 hover:text-[#00CAFF] hover:border-[#00CAFF]
                                transition-all duration-200 focus:outline-none"
                         aria-label="Geser kiri">
                     <i class="fas fa-chevron-left text-sm"></i>
@@ -457,23 +420,22 @@
                             {{-- Circular badge --}}
                             <div class="flex-shrink-0
                                         w-[120px] h-[120px] rounded-full
-                                        bg-white border-2 border-slate-200 shadow-md
+                                        bg-white border-2 border-slate-200 shadow-sm
                                         flex items-center justify-center p-4
                                         transition-all duration-300 ease-in-out
                                         group-hover:scale-110
                                         group-hover:border-[#00C3FF]
                                         group-hover:ring-[5px] group-hover:ring-[#00C3FF]/20
-                                        group-hover:shadow-xl">
+                                        group-hover:shadow-md">
 
                                 @if($mitra->logo)
                                     <img src="{{ asset('storage/' . $mitra->logo) }}"
                                          alt="{{ $mitra->nama }}"
                                          class="max-w-full max-h-full object-contain block">
                                 @else
-                                    {{-- Placeholder: gradient + initials --}}
-                                    <div class="w-full h-full rounded-full flex items-center justify-center
-                                                bg-gradient-to-br from-[#D6EEFF] to-[#B3DFFF]">
-                                        <span class="text-[#0099CC] font-bold text-xl leading-none select-none">
+                                    {{-- Placeholder: neutral clean initials --}}
+                                    <div class="w-full h-full rounded-full flex items-center justify-center bg-gray-200">
+                                        <span class="text-slate-600 font-bold text-xl leading-none select-none">
                                             {{ strtoupper(substr(trim($mitra->nama), 0, 2)) }}
                                         </span>
                                     </div>
@@ -495,9 +457,9 @@
 
                 {{-- Right nav arrow --}}
                 <button type="button" id="mitraScrollRight"
-                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white/80 border border-slate-200 shadow
+                        class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm
                                flex items-center justify-center text-slate-500
-                               hover:bg-white hover:text-[#00CAFF] hover:border-[#00CAFF]
+                               hover:bg-slate-50 hover:text-[#00CAFF] hover:border-[#00CAFF]
                                transition-all duration-200 focus:outline-none"
                         aria-label="Geser kanan">
                     <i class="fas fa-chevron-right text-sm"></i>
