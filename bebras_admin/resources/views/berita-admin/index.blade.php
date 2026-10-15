@@ -24,6 +24,9 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Manajemen Berita</h5>
+                        <a href="{{ route('admin.berita.create') }}" class="btn btn-primary btn-sm">
+                            <i class="bx bx-plus me-1"></i> Tambah Berita
+                        </a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -72,7 +75,7 @@ $(document).ready(function() {
 
     setTimeout(function() { $('.alert').alert('close'); }, 4000);
 
-    // SweetAlert2 — konfirmasi approve / reject / hapus
+    // SweetAlert2 â€” konfirmasi approve / reject / hapus
     $(document).on('click', '.btn-aksi-berita', function () {
         const btn  = $(this);
         const form = btn.closest('.form-aksi-berita');

@@ -227,6 +227,49 @@ class BeritaControllerTest extends TestCase
         $response->assertSee('Tidak ada gambar');
     }
 
+    /**
+     * Berita dengan galeri multi-gambar — relasi gambarBerita dimuat dan disertakan dalam payload cardData.
+     */
+    public function test_berita_dengan_galeri_multi_gambar_ter_render(): void
+    {
+        $id = DB::table('kegiatans')->insertGetId([
+            'menu_kegiatan_id' => null,
+            'tipe'             => 'berita',
+            'judul'            => 'Berita Galeri Frontend Test',
+            'deskripsi'        => 'Deskripsi uji galeri multi foto.',
+            'gambar'           => 'img/berita_cover.jpg',
+            'urutan'           => 1,
+            'status_validasi'  => 'approved',
+            'created_at'       => now(),
+            'updated_at'       => now(),
+        ]);
+
+        DB::table('gambar_berita')->insert([
+            [
+                'kegiatan_id' => $id,
+                'gambar'      => 'berita/galeri/foto_slide_1.jpg',
+                'urutan'      => 1,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ],
+            [
+                'kegiatan_id' => $id,
+                'gambar'      => 'berita/galeri/foto_slide_2.jpg',
+                'urutan'      => 2,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ],
+        ]);
+
+        $response = $this->get('/kegiatan/berita');
+
+        $response->assertStatus(200);
+        $response->assertSee('Berita Galeri Frontend Test');
+        $response->assertSee('foto_slide_1.jpg');
+        $response->assertSee('foto_slide_2.jpg');
+        $response->assertSee('modalCarouselContainer', false);
+    }
+
     // =========================================================================
     // Property 6 — Urutan Tampil Berita di Frontend
     // =========================================================================

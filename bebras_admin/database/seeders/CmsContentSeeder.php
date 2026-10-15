@@ -199,13 +199,15 @@ class CmsContentSeeder extends Seeder
         ]);
 
         // dd_7
-        $dd7 = TentangBebras::create([
-            'slug' => 'dd_7',
-            'judul' => 'Koordinator Bebras Biro',
-            'konten' => '<p>Berikut adalah daftar Bebras Biro dan koordinatornya masing-masing.</p>',
-            'urutan' => 7,
-            'template' => 'dd_7'
-        ]);
+        $dd7 = TentangBebras::updateOrCreate(
+            ['slug' => 'dd_7'],
+            [
+                'judul' => 'Koordinator Bebras Biro',
+                'konten' => '<p>Berikut adalah daftar Bebras Biro dan koordinatornya masing-masing.</p>',
+                'urutan' => 7,
+                'template' => 'dd_7'
+            ]
+        );
 
         // === 5. Soal Pages (menu_soal) ===
         // index-soal

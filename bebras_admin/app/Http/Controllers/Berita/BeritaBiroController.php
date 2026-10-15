@@ -105,24 +105,26 @@ class BeritaBiroController extends Controller
     public function create()
     {
         $breadcrumbs = $this->breadCrumbs('Tambah Berita');
-        $menuList    = MenuKegiatan::orderBy('urutan')->get();
 
-        return view('berita.form', compact('breadcrumbs', 'menuList'));
+        return view('berita.form', compact('breadcrumbs'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'menu_kegiatan_id' => 'nullable|exists:menu_kegiatan,id',
-            'judul'            => 'required|string|max:255',
-            'deskripsi'        => 'required|string',
-            'gambar'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'kota'             => 'nullable|string|max:255',
-            'tanggal_lokasi'   => 'nullable|date',
-            'speaker'          => 'nullable|string|max:255',
-            'urutan'           => 'nullable|integer',
+            'menu_kegiatan_id'   => 'nullable',
+            'judul'              => 'required|string|max:255',
+            'deskripsi'          => 'required|string',
+            'gambar'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'kota'               => 'nullable|string|max:255',
+            'tanggal_lokasi'     => 'nullable|date',
+            'speaker'            => 'nullable|string|max:255',
+            'urutan'             => 'nullable|integer',
+            'gambar_berita'      => 'nullable|array',
+            'gambar_berita.*'    => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        $validated['menu_kegiatan_id'] = null;
         $validated['tipe']            = 'berita';
         $validated['status_validasi'] = 'pending';
         $validated['dibuat_oleh']     = auth()->id();
@@ -133,7 +135,18 @@ class BeritaBiroController extends Controller
                 $validated['gambar'] = $request->file('gambar')->store('berita', 'public');
             }
 
-            Kegiatan::create($validated);
+            $kegiatan = Kegiatan::create($validated);
+
+            if ($request->hasFile('gambar_berita')) {
+                foreach ($request->file('gambar_berita') as $idx => $file) {
+                    $path = $file->store('berita/galeri', 'public');
+                    $kegiatan->gambarBerita()->create([
+                        'gambar' => $path,
+                        'urutan' => $idx + 1,
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return redirect()
@@ -149,16 +162,15 @@ class BeritaBiroController extends Controller
 
     public function edit($id)
     {
-        $berita = Kegiatan::findOrFail($id);
+        $berita = Kegiatan::with('gambarBerita')->findOrFail($id);
 
         if ($berita->dibuat_oleh !== auth()->id()) {
             abort(403);
         }
 
         $breadcrumbs = $this->breadCrumbs('Edit Berita');
-        $menuList    = MenuKegiatan::orderBy('urutan')->get();
 
-        return view('berita.form', compact('breadcrumbs', 'menuList', 'berita'));
+        return view('berita.form', compact('breadcrumbs', 'berita'));
     }
 
     public function update(Request $request, $id)
@@ -170,16 +182,21 @@ class BeritaBiroController extends Controller
         }
 
         $validated = $request->validate([
-            'menu_kegiatan_id' => 'nullable|exists:menu_kegiatan,id',
-            'judul'            => 'required|string|max:255',
-            'deskripsi'        => 'required|string',
-            'gambar'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'kota'             => 'nullable|string|max:255',
-            'tanggal_lokasi'   => 'nullable|date',
-            'speaker'          => 'nullable|string|max:255',
-            'urutan'           => 'nullable|integer',
+            'menu_kegiatan_id'       => 'nullable',
+            'judul'                  => 'required|string|max:255',
+            'deskripsi'              => 'required|string',
+            'gambar'                 => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'kota'                   => 'nullable|string|max:255',
+            'tanggal_lokasi'         => 'nullable|date',
+            'speaker'                => 'nullable|string|max:255',
+            'urutan'                 => 'nullable|integer',
+            'gambar_berita'          => 'nullable|array',
+            'gambar_berita.*'        => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'hapus_gambar_berita'    => 'nullable|array',
+            'hapus_gambar_berita.*'  => 'integer|exists:gambar_berita,id',
         ]);
 
+        $validated['menu_kegiatan_id'] = null;
         // Selalu reset status ke pending saat biro mengedit (req 3.3)
         $validated['status_validasi'] = 'pending';
 
@@ -195,6 +212,30 @@ class BeritaBiroController extends Controller
             }
 
             $berita->update($validated);
+
+            // Hapus gambar galeri yang dipilih untuk dihapus
+            if (!empty($request->hapus_gambar_berita)) {
+                $gambarList = $berita->gambarBerita()->whereIn('id', $request->hapus_gambar_berita)->get();
+                foreach ($gambarList as $gb) {
+                    if ($gb->gambar && Storage::disk('public')->exists($gb->gambar)) {
+                        Storage::disk('public')->delete($gb->gambar);
+                    }
+                    $gb->delete();
+                }
+            }
+
+            // Tambah gambar galeri baru jika diunggah
+            if ($request->hasFile('gambar_berita')) {
+                $lastUrutan = $berita->gambarBerita()->max('urutan') ?? 0;
+                foreach ($request->file('gambar_berita') as $file) {
+                    $path = $file->store('berita/galeri', 'public');
+                    $berita->gambarBerita()->create([
+                        'gambar' => $path,
+                        'urutan' => ++$lastUrutan,
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return redirect()
@@ -210,7 +251,7 @@ class BeritaBiroController extends Controller
 
     public function destroy($id)
     {
-        $berita = Kegiatan::findOrFail($id);
+        $berita = Kegiatan::with('gambarBerita')->findOrFail($id);
 
         if ($berita->dibuat_oleh !== auth()->id()) {
             abort(403);
@@ -225,6 +266,13 @@ class BeritaBiroController extends Controller
         try {
             if ($berita->gambar && Storage::disk('public')->exists($berita->gambar)) {
                 Storage::disk('public')->delete($berita->gambar);
+            }
+
+            // Hapus file fisik gambar galeri
+            foreach ($berita->gambarBerita as $gb) {
+                if ($gb->gambar && Storage::disk('public')->exists($gb->gambar)) {
+                    Storage::disk('public')->delete($gb->gambar);
+                }
             }
 
             $berita->delete();

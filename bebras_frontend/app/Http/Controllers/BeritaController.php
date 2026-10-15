@@ -8,7 +8,8 @@ class BeritaController extends Controller
 {
     public function index()
     {
-        $beritas = Kegiatan::where('tipe', 'berita')
+        $beritas = Kegiatan::with('gambarBerita')
+            ->where('tipe', 'berita')
             ->where('status_validasi', 'approved')
             ->orderBy('urutan', 'asc')
             ->orderBy('created_at', 'desc')

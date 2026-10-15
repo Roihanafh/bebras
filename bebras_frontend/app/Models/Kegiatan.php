@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kegiatan extends Model
 {
@@ -37,5 +38,10 @@ class Kegiatan extends Model
     public function menuKegiatan(): BelongsTo
     {
         return $this->belongsTo(MenuKegiatan::class, 'menu_kegiatan_id');
+    }
+
+    public function gambarBerita(): HasMany
+    {
+        return $this->hasMany(GambarBerita::class, 'kegiatan_id')->orderBy('urutan', 'asc');
     }
 }

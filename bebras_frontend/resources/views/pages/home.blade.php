@@ -172,10 +172,24 @@
                                     ? asset($pengumuman->gambar)
                                     : asset('storage/' . $pengumuman->gambar))
                                 : null;
+
+                            $pengumumanGaleri = [];
+                            if (isset($pengumuman->gambarBerita) && $pengumuman->gambarBerita->isNotEmpty()) {
+                                foreach ($pengumuman->gambarBerita as $gb) {
+                                    $pengumumanGaleri[] = str_starts_with($gb->gambar, 'img/')
+                                        ? asset($gb->gambar)
+                                        : asset('storage/' . $gb->gambar);
+                                }
+                            }
+                            if (empty($pengumumanGaleri) && $pengumumanGambar) {
+                                $pengumumanGaleri = [$pengumumanGambar];
+                            }
+
                             $pengumumanData = json_encode([
                                 'id' => $pengumuman->id,
                                 'judul' => $pengumuman->judul,
                                 'gambar' => $pengumumanGambar,
+                                'galeri' => $pengumumanGaleri,
                                 'kota' => $pengumuman->kota,
                                 'tanggal' => $pengumumanTanggal,
                                 'deskripsi' => $pengumuman->deskripsi,
@@ -242,9 +256,22 @@
                                     : asset('storage/' . $berita->gambar);
                             }
 
+                            $beritaGaleri = [];
+                            if (isset($berita->gambarBerita) && $berita->gambarBerita->isNotEmpty()) {
+                                foreach ($berita->gambarBerita as $gb) {
+                                    $beritaGaleri[] = str_starts_with($gb->gambar, 'img/')
+                                        ? asset($gb->gambar)
+                                        : asset('storage/' . $gb->gambar);
+                                }
+                            }
+                            if (empty($beritaGaleri) && $gambarUrl) {
+                                $beritaGaleri = [$gambarUrl];
+                            }
+
                             $beritaData = json_encode([
                                 'judul' => $berita->judul,
                                 'gambar' => $gambarUrl,
+                                'galeri' => $beritaGaleri,
                                 'kota' => $berita->kota,
                                 'tanggal' => $tglFormatted,
                                 'deskripsi' => $berita->deskripsi,
@@ -298,18 +325,44 @@
         <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-8" onclick="event.stopPropagation()">
             <div class="relative bg-gradient-to-r from-bebrasDarkBlue to-bebrasBlue p-6 text-white">
                 <button type="button" onclick="closeBeritaModal()"
-                    class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center">
+                    class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center" aria-label="Tutup modal">
                     <i class="fas fa-times"></i>
                 </button>
                 <span id="beritaModalKota" class="inline-block text-xs font-semibold uppercase bg-white/20 px-2.5 py-1 rounded-full mb-2 hidden"></span>
                 <h3 id="beritaModalJudul" class="text-xl md:text-2xl font-bold leading-tight pr-8"></h3>
             </div>
             <div class="p-6 max-h-[75vh] overflow-y-auto">
-                <img id="beritaModalGambar" src="" alt="" class="w-full max-h-80 object-cover rounded-xl shadow mb-4 hidden">
                 <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4 pb-4 border-b">
                     <span id="beritaModalTanggal" class="hidden items-center gap-1.5 font-medium"></span>
                 </div>
-                <div id="beritaModalDeskripsi" class="prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base"></div>
+
+                {{-- CAROUSEL GALERI BERITA (ANTI-STRETCH & AUTOPLAY) --}}
+                <div id="beritaModalCarouselContainer" class="mb-6 hidden">
+                    <div id="beritaCarouselWrapper" class="relative w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-xl bg-slate-950 flex items-center justify-center shadow-inner group">
+                        <img id="beritaCarouselBgImg" src="" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none select-none">
+                        <img id="beritaCarouselMainImg" src="" alt="" class="relative z-10 max-h-full max-w-full w-auto h-auto object-contain mx-auto transition-opacity duration-300 drop-shadow-md select-none">
+
+                        <button type="button" id="beritaCarouselPrevBtn" onclick="beritaCarouselController && beritaCarouselController.prev()"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition focus:outline-none"
+                                aria-label="Foto Sebelumnya">
+                            <i class="fas fa-chevron-left text-sm"></i>
+                        </button>
+
+                        <button type="button" id="beritaCarouselNextBtn" onclick="beritaCarouselController && beritaCarouselController.next()"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition focus:outline-none"
+                                aria-label="Foto Selanjutnya">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+
+                        <div id="beritaCarouselBadge" class="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm select-none">
+                            1 / 1
+                        </div>
+
+                        <div id="beritaCarouselDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-auto"></div>
+                    </div>
+                </div>
+
+                <div id="beritaModalDeskripsi" class="tiny-content prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base"></div>
             </div>
             <div class="bg-gray-50 px-6 py-4 border-t flex justify-end">
                 <button type="button" onclick="closeBeritaModal()"
@@ -325,19 +378,45 @@
         <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-8" onclick="event.stopPropagation()">
             <div class="relative bg-gradient-to-r from-bebrasDarkBlue to-bebrasBlue p-6 text-white">
                 <button type="button" onclick="closePengumumanModal()"
-                    class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center">
+                    class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center" aria-label="Tutup modal">
                     <i class="fas fa-times"></i>
                 </button>
                 <span class="inline-block text-xs font-semibold uppercase bg-white/20 px-2.5 py-1 rounded-full mb-2">Pengumuman</span>
                 <h3 id="pengumumanModalJudul" class="text-xl md:text-2xl font-bold leading-tight pr-8"></h3>
             </div>
             <div class="p-6 max-h-[75vh] overflow-y-auto">
-                <img id="pengumumanModalGambar" src="" alt="" class="w-full max-h-80 object-cover rounded-xl shadow mb-4 hidden">
                 <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4 pb-4 border-b">
                     <span id="pengumumanModalTanggal" class="hidden items-center gap-1.5 font-medium"></span>
                     <span id="pengumumanModalKota" class="hidden items-center gap-1.5"></span>
                 </div>
-                <div id="pengumumanModalDeskripsi" class="prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base"></div>
+
+                {{-- CAROUSEL GALERI PENGUMUMAN (ANTI-STRETCH & AUTOPLAY) --}}
+                <div id="pengumumanModalCarouselContainer" class="mb-6 hidden">
+                    <div id="pengumumanCarouselWrapper" class="relative w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-xl bg-slate-950 flex items-center justify-center shadow-inner group">
+                        <img id="pengumumanCarouselBgImg" src="" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none select-none">
+                        <img id="pengumumanCarouselMainImg" src="" alt="" class="relative z-10 max-h-full max-w-full w-auto h-auto object-contain mx-auto transition-opacity duration-300 drop-shadow-md select-none">
+
+                        <button type="button" id="pengumumanCarouselPrevBtn" onclick="pengumumanCarouselController && pengumumanCarouselController.prev()"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition focus:outline-none"
+                                aria-label="Foto Sebelumnya">
+                            <i class="fas fa-chevron-left text-sm"></i>
+                        </button>
+
+                        <button type="button" id="pengumumanCarouselNextBtn" onclick="pengumumanCarouselController && pengumumanCarouselController.next()"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition focus:outline-none"
+                                aria-label="Foto Selanjutnya">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+
+                        <div id="pengumumanCarouselBadge" class="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm select-none">
+                            1 / 1
+                        </div>
+
+                        <div id="pengumumanCarouselDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-auto"></div>
+                    </div>
+                </div>
+
+                <div id="pengumumanModalDeskripsi" class="tiny-content prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base"></div>
             </div>
             <div class="bg-gray-50 px-6 py-4 border-t flex justify-end">
                 <button type="button" onclick="closePengumumanModal()"
@@ -490,14 +569,149 @@
     @push('scripts')
         <script src="{{ asset('js/script.js') }}"></script>
         <script>
+            // Helper Carousel Controller dengan Autoplay
+            function createModalCarousel(config) {
+                let images = [];
+                let currentIndex = 0;
+                let autoplayTimer = null;
+                const intervalMs = config.interval || 3500;
+
+                function render() {
+                    if (!images || images.length === 0) return;
+                    const currentUrl = images[currentIndex];
+
+                    config.mainImg.style.opacity = '0.3';
+                    config.bgImg.src = currentUrl;
+                    config.mainImg.src = currentUrl;
+                    setTimeout(() => { config.mainImg.style.opacity = '1'; }, 50);
+
+                    if (config.badge) {
+                        config.badge.innerText = (currentIndex + 1) + ' / ' + images.length;
+                    }
+
+                    if (config.dots) {
+                        config.dots.innerHTML = '';
+                        images.forEach((_, idx) => {
+                            const dot = document.createElement('button');
+                            dot.type = 'button';
+                            dot.className = 'h-2 rounded-full transition-all ' +
+                                (idx === currentIndex ? 'bg-white w-5' : 'bg-white/50 w-2 hover:bg-white/80');
+                            dot.onclick = () => {
+                                currentIndex = idx;
+                                render();
+                                resetAutoplay();
+                            };
+                            config.dots.appendChild(dot);
+                        });
+                    }
+                }
+
+                function next() {
+                    if (images.length <= 1) return;
+                    currentIndex = (currentIndex + 1) % images.length;
+                    render();
+                }
+
+                function prev() {
+                    if (images.length <= 1) return;
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    render();
+                }
+
+                function startAutoplay() {
+                    stopAutoplay();
+                    if (images.length > 1) {
+                        autoplayTimer = setInterval(() => {
+                            next();
+                        }, intervalMs);
+                    }
+                }
+
+                function stopAutoplay() {
+                    if (autoplayTimer) {
+                        clearInterval(autoplayTimer);
+                        autoplayTimer = null;
+                    }
+                }
+
+                function resetAutoplay() {
+                    stopAutoplay();
+                    startAutoplay();
+                }
+
+                if (config.wrapper) {
+                    config.wrapper.addEventListener('mouseenter', stopAutoplay);
+                    config.wrapper.addEventListener('mouseleave', startAutoplay);
+                }
+
+                function init(imgs) {
+                    images = imgs || [];
+                    currentIndex = 0;
+                    stopAutoplay();
+
+                    if (!images || images.length === 0) {
+                        config.container.classList.add('hidden');
+                        return;
+                    }
+
+                    config.container.classList.remove('hidden');
+
+                    if (images.length === 1) {
+                        if (config.prevBtn) config.prevBtn.classList.add('hidden');
+                        if (config.nextBtn) config.nextBtn.classList.add('hidden');
+                        if (config.badge) config.badge.classList.add('hidden');
+                        if (config.dots) config.dots.classList.add('hidden');
+                    } else {
+                        if (config.prevBtn) config.prevBtn.classList.remove('hidden');
+                        if (config.nextBtn) config.nextBtn.classList.remove('hidden');
+                        if (config.badge) config.badge.classList.remove('hidden');
+                        if (config.dots) config.dots.classList.remove('hidden');
+                        startAutoplay();
+                    }
+
+                    render();
+                }
+
+                return {
+                    init,
+                    next: () => { next(); resetAutoplay(); },
+                    prev: () => { prev(); resetAutoplay(); },
+                    stop: stopAutoplay
+                };
+            }
+
+            let beritaCarouselController = null;
+            let pengumumanCarouselController = null;
+
+            document.addEventListener('DOMContentLoaded', function () {
+                beritaCarouselController = createModalCarousel({
+                    container: document.getElementById('beritaModalCarouselContainer'),
+                    wrapper: document.getElementById('beritaCarouselWrapper'),
+                    bgImg: document.getElementById('beritaCarouselBgImg'),
+                    mainImg: document.getElementById('beritaCarouselMainImg'),
+                    prevBtn: document.getElementById('beritaCarouselPrevBtn'),
+                    nextBtn: document.getElementById('beritaCarouselNextBtn'),
+                    badge: document.getElementById('beritaCarouselBadge'),
+                    dots: document.getElementById('beritaCarouselDots'),
+                    interval: 3500
+                });
+
+                pengumumanCarouselController = createModalCarousel({
+                    container: document.getElementById('pengumumanModalCarouselContainer'),
+                    wrapper: document.getElementById('pengumumanCarouselWrapper'),
+                    bgImg: document.getElementById('pengumumanCarouselBgImg'),
+                    mainImg: document.getElementById('pengumumanCarouselMainImg'),
+                    prevBtn: document.getElementById('pengumumanCarouselPrevBtn'),
+                    nextBtn: document.getElementById('pengumumanCarouselNextBtn'),
+                    badge: document.getElementById('pengumumanCarouselBadge'),
+                    dots: document.getElementById('pengumumanCarouselDots'),
+                    interval: 3500
+                });
+            });
+
             function openPengumumanModal(data) {
                 document.getElementById('pengumumanModalJudul').innerText = data.judul || '';
                 document.getElementById('pengumumanModalDeskripsi').innerHTML = data.deskripsi || '';
-
-                const gambar = document.getElementById('pengumumanModalGambar');
-                gambar.src = data.gambar || '';
-                gambar.alt = data.judul || '';
-                gambar.classList.toggle('hidden', !data.gambar);
 
                 const tanggal = document.getElementById('pengumumanModalTanggal');
                 tanggal.innerHTML = data.tanggal ? '<span>📅</span> ' + data.tanggal : '';
@@ -509,12 +723,23 @@
                 kota.classList.toggle('hidden', !data.kota);
                 kota.classList.toggle('flex', Boolean(data.kota));
 
+                const galeri = (data.galeri && data.galeri.length > 0)
+                    ? data.galeri
+                    : (data.gambar ? [data.gambar] : []);
+
+                if (pengumumanCarouselController) {
+                    pengumumanCarouselController.init(galeri);
+                }
+
                 document.getElementById('pengumumanModal').classList.remove('hidden');
                 document.getElementById('pengumumanModal').classList.add('flex');
                 document.body.style.overflow = 'hidden';
             }
 
             function closePengumumanModal() {
+                if (pengumumanCarouselController) {
+                    pengumumanCarouselController.stop();
+                }
                 document.getElementById('pengumumanModal').classList.add('hidden');
                 document.getElementById('pengumumanModal').classList.remove('flex');
                 document.body.style.overflow = '';
@@ -533,16 +758,22 @@
                 tanggal.classList.toggle('hidden', !data.tanggal);
                 tanggal.classList.toggle('flex', Boolean(data.tanggal));
 
-                const gambar = document.getElementById('beritaModalGambar');
-                gambar.src = data.gambar || '';
-                gambar.alt = data.judul || '';
-                gambar.classList.toggle('hidden', !data.gambar);
+                const galeri = (data.galeri && data.galeri.length > 0)
+                    ? data.galeri
+                    : (data.gambar ? [data.gambar] : []);
+
+                if (beritaCarouselController) {
+                    beritaCarouselController.init(galeri);
+                }
 
                 document.getElementById('beritaModal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
 
             function closeBeritaModal() {
+                if (beritaCarouselController) {
+                    beritaCarouselController.stop();
+                }
                 document.getElementById('beritaModal').classList.add('hidden');
                 document.body.style.overflow = '';
             }
@@ -551,20 +782,47 @@
                 if (event.key === 'Escape') {
                     closeBeritaModal();
                     closePengumumanModal();
+                } else if (event.key === 'ArrowLeft') {
+                    if (!document.getElementById('beritaModal').classList.contains('hidden') && beritaCarouselController) {
+                        beritaCarouselController.prev();
+                    } else if (!document.getElementById('pengumumanModal').classList.contains('hidden') && pengumumanCarouselController) {
+                        pengumumanCarouselController.prev();
+                    }
+                } else if (event.key === 'ArrowRight') {
+                    if (!document.getElementById('beritaModal').classList.contains('hidden') && beritaCarouselController) {
+                        beritaCarouselController.next();
+                    } else if (!document.getElementById('pengumumanModal').classList.contains('hidden') && pengumumanCarouselController) {
+                        pengumumanCarouselController.next();
+                    }
                 }
             });
 
             @php
                 $popupData = null;
                 if ($popupPengumuman) {
+                    $popupImg = $popupPengumuman->gambar
+                        ? (str_starts_with($popupPengumuman->gambar, 'img/')
+                            ? asset($popupPengumuman->gambar)
+                            : asset('storage/' . $popupPengumuman->gambar))
+                        : null;
+
+                    $popupGaleri = [];
+                    if (isset($popupPengumuman->gambarBerita) && $popupPengumuman->gambarBerita->isNotEmpty()) {
+                        foreach ($popupPengumuman->gambarBerita as $gb) {
+                            $popupGaleri[] = str_starts_with($gb->gambar, 'img/')
+                                ? asset($gb->gambar)
+                                : asset('storage/' . $gb->gambar);
+                        }
+                    }
+                    if (empty($popupGaleri) && $popupImg) {
+                        $popupGaleri = [$popupImg];
+                    }
+
                     $popupData = [
                         'id' => $popupPengumuman->id,
                         'judul' => $popupPengumuman->judul,
-                        'gambar' => $popupPengumuman->gambar
-                            ? (str_starts_with($popupPengumuman->gambar, 'img/')
-                                ? asset($popupPengumuman->gambar)
-                                : asset('storage/' . $popupPengumuman->gambar))
-                            : null,
+                        'gambar' => $popupImg,
+                        'galeri' => $popupGaleri,
                         'kota' => $popupPengumuman->kota,
                         'tanggal' => $popupPengumuman->tanggal_lokasi
                             ? \Carbon\Carbon::parse($popupPengumuman->tanggal_lokasi)->translatedFormat('d F Y')

@@ -127,7 +127,7 @@ class BeritaBiroControllerTest extends TestCase
         $response = $this->actingAs($biro)
             ->post('/berita/store', []);
 
-        $response->assertSessionHasErrors(['menu_kegiatan_id', 'judul', 'deskripsi']);
+        $response->assertSessionHasErrors(['judul', 'deskripsi']);
     }
 
     /**

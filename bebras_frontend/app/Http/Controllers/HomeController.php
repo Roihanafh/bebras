@@ -14,19 +14,22 @@ class HomeController extends Controller
     {
         $banners = Banner::orderBy('urutan', 'asc')->get();
         $kegiatans = Kegiatan::where('tipe', 'kegiatan_utama')->orderBy('urutan', 'asc')->get();
-        $beritas = Kegiatan::where('tipe', 'berita')
+        $beritas = Kegiatan::with('gambarBerita')
+            ->where('tipe', 'berita')
             ->where('status_validasi', 'approved')
             ->orderBy('urutan', 'asc')
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get();
-        $pengumumans = Kegiatan::where('tipe', 'pengumuman')
+        $pengumumans = Kegiatan::with('gambarBerita')
+            ->where('tipe', 'pengumuman')
             ->where('status_validasi', 'approved')
             ->orderBy('urutan', 'asc')
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get();
-        $popupPengumuman = Kegiatan::where('tipe', 'pengumuman')
+        $popupPengumuman = Kegiatan::with('gambarBerita')
+            ->where('tipe', 'pengumuman')
             ->where('status_validasi', 'approved')
             ->where('is_popup', true)
             ->latest('created_at')

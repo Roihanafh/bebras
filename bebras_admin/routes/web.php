@@ -199,6 +199,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::prefix('admin/berita')->name('admin.berita.')->group(function () {
         Route::get('/', [BeritaAdminController::class, 'index'])->name('index');
         Route::get('/list', [BeritaAdminController::class, 'list'])->name('list');
+        Route::get('/create', [BeritaAdminController::class, 'create'])->name('create');
+        Route::post('/store', [BeritaAdminController::class, 'store'])->name('store');
+        Route::post('/', [BeritaAdminController::class, 'store']);
         Route::get('/{id}/edit', [BeritaAdminController::class, 'edit'])->name('edit');
         Route::put('/{id}', [BeritaAdminController::class, 'update'])->name('update');
         Route::post('/{id}/approve', [BeritaAdminController::class, 'approve'])->name('approve');

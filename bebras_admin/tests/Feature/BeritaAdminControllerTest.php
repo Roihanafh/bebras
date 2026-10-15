@@ -679,4 +679,201 @@ class BeritaAdminControllerTest extends TestCase
         // Berita masih ada di database
         $this->assertDatabaseHas('kegiatans', ['id' => $berita->id]);
     }
+
+    // -----------------------------------------------------------------------
+    // Test: create & store berita admin
+    // -----------------------------------------------------------------------
+
+    /**
+     * Admin dapat membuka halaman form tambah berita.
+     */
+    public function test_admin_dapat_melihat_halaman_create_berita(): void
+    {
+        $admin = $this->buatAdmin();
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.berita.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('berita-admin.form');
+        $response->assertSee('Tambah Berita');
+    }
+
+    /**
+     * Admin dapat menambahkan berita baru dan langsung berstatus approved.
+     */
+    public function test_admin_dapat_menambahkan_berita_baru_langsung_approved(): void
+    {
+        $admin = $this->buatAdmin();
+        $menu  = $this->buatMenuKegiatan();
+
+        $payload = [
+            'menu_kegiatan_id' => $menu->id,
+            'judul'            => 'Berita Resmi Ditambahkan Admin',
+            'deskripsi'        => 'Isi berita resmi dari administrator Bebras.',
+            'kota'             => 'Bandung',
+            'tanggal_lokasi'   => '2026-10-20',
+            'speaker'          => 'Dr. Admin',
+            'urutan'           => 1,
+        ];
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.berita.store'), $payload);
+
+        $response->assertRedirect(route('admin.berita.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('kegiatans', [
+            'tipe'            => 'berita',
+            'judul'           => 'Berita Resmi Ditambahkan Admin',
+            'deskripsi'       => 'Isi berita resmi dari administrator Bebras.',
+            'kota'            => 'Bandung',
+            'status_validasi'  => 'approved',
+            'dibuat_oleh'      => $admin->id,
+            'divalidasi_oleh'  => $admin->id,
+            'menu_kegiatan_id' => null,
+        ]);
+    }
+
+    /**
+     * Admin dapat menambahkan berita dengan file gambar dan tersimpan di storage public/berita.
+     */
+    public function test_admin_tambah_berita_dengan_gambar_tersimpan(): void
+    {
+        Storage::fake('public');
+        $admin = $this->buatAdmin();
+
+        $gambar = UploadedFile::fake()->image('berita_admin.jpg', 600, 400);
+
+        $payload = [
+            'judul'     => 'Berita Bergambar Admin',
+            'deskripsi' => 'Deskripsi berita bergambar.',
+            'gambar'    => $gambar,
+        ];
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.berita.store'), $payload);
+
+        $response->assertRedirect(route('admin.berita.index'));
+
+        $berita = Kegiatan::where('judul', 'Berita Bergambar Admin')->first();
+        $this->assertNotNull($berita);
+        $this->assertNotNull($berita->gambar);
+        Storage::disk('public')->assertExists($berita->gambar);
+    }
+
+    /**
+     * Validasi gagal jika judul atau deskripsi kosong.
+     */
+    public function test_admin_tambah_berita_validasi_judul_dan_deskripsi_required(): void
+    {
+        $admin = $this->buatAdmin();
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.berita.store'), [
+                'judul'     => '',
+                'deskripsi' => '',
+            ]);
+
+        $response->assertSessionHasErrors(['judul', 'deskripsi']);
+    }
+
+    /**
+     * Admin dapat menambahkan berita dengan multi-gambar galeri.
+     */
+    public function test_admin_tambah_berita_dengan_multi_gambar_galeri(): void
+    {
+        Storage::fake('public');
+        $admin = $this->buatAdmin();
+
+        $cover   = UploadedFile::fake()->image('cover.jpg', 600, 400);
+        $galeri1 = UploadedFile::fake()->image('foto1.jpg', 800, 600);
+        $galeri2 = UploadedFile::fake()->image('foto2.jpg', 800, 600);
+
+        $payload = [
+            'judul'         => 'Berita Dengan Galeri',
+            'deskripsi'     => 'Deskripsi dengan galeri multi foto.',
+            'gambar'        => $cover,
+            'gambar_berita' => [$galeri1, $galeri2],
+        ];
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.berita.store'), $payload);
+
+        $response->assertRedirect(route('admin.berita.index'));
+
+        $berita = Kegiatan::with('gambarBerita')->where('judul', 'Berita Dengan Galeri')->first();
+        $this->assertNotNull($berita);
+        $this->assertCount(2, $berita->gambarBerita);
+
+        foreach ($berita->gambarBerita as $gb) {
+            Storage::disk('public')->assertExists($gb->gambar);
+        }
+    }
+
+    /**
+     * Admin dapat menghapus foto galeri tertentu dan menambahkan foto baru pada saat edit.
+     */
+    public function test_admin_update_hapus_sebagian_gambar_galeri_dan_tambah_gambar_baru(): void
+    {
+        Storage::fake('public');
+        $admin  = $this->buatAdmin();
+        $menu   = $this->buatMenuKegiatan();
+        $berita = $this->buatBerita($admin, 'approved', $menu);
+
+        // Buat 2 foto galeri awal
+        $fileA = UploadedFile::fake()->image('awal1.jpg')->store('berita/galeri', 'public');
+        $fileB = UploadedFile::fake()->image('awal2.jpg')->store('berita/galeri', 'public');
+        $gb1 = $berita->gambarBerita()->create(['gambar' => $fileA, 'urutan' => 1]);
+        $gb2 = $berita->gambarBerita()->create(['gambar' => $fileB, 'urutan' => 2]);
+
+        $fileBaru = UploadedFile::fake()->image('baru.jpg');
+
+        $payload = [
+            'judul'               => 'Judul Diperbarui',
+            'deskripsi'           => 'Deskripsi baru.',
+            'hapus_gambar_berita' => [$gb1->id],
+            'gambar_berita'       => [$fileBaru],
+        ];
+
+        $response = $this->actingAs($admin)
+            ->put(route('admin.berita.update', $berita->id), $payload);
+
+        $response->assertRedirect(route('admin.berita.index'));
+
+        // gb1 terhapus dari db dan storage
+        $this->assertDatabaseMissing('gambar_berita', ['id' => $gb1->id]);
+        Storage::disk('public')->assertMissing($fileA);
+
+        // gb2 masih ada
+        $this->assertDatabaseHas('gambar_berita', ['id' => $gb2->id]);
+        Storage::disk('public')->assertExists($fileB);
+
+        // Foto baru tersimpan
+        $berita->refresh();
+        $this->assertCount(2, $berita->gambarBerita); // gb2 + 1 baru
+    }
+
+    /**
+     * Destroy menghapus seluruh file foto galeri dari storage.
+     */
+    public function test_admin_destroy_menghapus_semua_file_galeri_dari_storage(): void
+    {
+        Storage::fake('public');
+        $admin  = $this->buatAdmin();
+        $berita = $this->buatBerita($admin, 'approved');
+
+        $file1 = UploadedFile::fake()->image('g1.jpg')->store('berita/galeri', 'public');
+        $file2 = UploadedFile::fake()->image('g2.jpg')->store('berita/galeri', 'public');
+        $berita->gambarBerita()->create(['gambar' => $file1, 'urutan' => 1]);
+        $berita->gambarBerita()->create(['gambar' => $file2, 'urutan' => 2]);
+
+        $response = $this->actingAs($admin)
+            ->delete(route('admin.berita.destroy', $berita->id));
+
+        $response->assertRedirect(route('admin.berita.index'));
+        $this->assertDatabaseMissing('kegiatans', ['id' => $berita->id]);
+        Storage::disk('public')->assertMissing($file1);
+        Storage::disk('public')->assertMissing($file2);
+    }
 }
