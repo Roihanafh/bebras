@@ -199,8 +199,6 @@ jobs:
           mkdir -p ~/.ssh ~/.ssh/sockets
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          cp ~/.ssh/id_ed25519 ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t ed25519,rsa -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           chmod 644 ~/.ssh/known_hosts
 
@@ -211,7 +209,8 @@ jobs:
           Host *
             Port ${{ secrets.SSH_PORT || '22' }}
             IdentityFile ~/.ssh/id_ed25519
-            IdentityFile ~/.ssh/id_rsa
+            IdentitiesOnly yes
+            PreferredAuthentications publickey
             StrictHostKeyChecking no
             ControlMaster auto
             ControlPath ~/.ssh/sockets/%r@%h-%p
