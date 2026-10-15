@@ -1,0 +1,168 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =========================================================================
+  # TAHAP 1: AUTOMATED TESTING (PHPUnit)
+  # Menjalankan unit & feature testing untuk bebras_admin dan bebras_frontend
+  # =========================================================================
+  test:
+    name: Run Automated Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: bebras_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, curl, zip
+          coverage: none
+
+      - name: ⚡ Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            bebras_admin/vendor
+            bebras_frontend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('bebras_admin/composer.lock', 'bebras_frontend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # ----------------- BACKEND TESTING (bebras_admin) -----------------
+      - name: 📦 Install Composer Dependencies (bebras_admin)
+        run: |
+          cd bebras_admin
+          composer install --prefer-dist --no-interaction
+
+      - name: ⚙️ Setup Environment & Migrations (bebras_admin)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_admin
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+
+      - name: 🧪 Run Tests (bebras_admin)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_admin
+          php artisan test
+
+      # ----------------- FRONTEND TESTING (bebras_frontend) -----------------
+      - name: 📦 Install Composer Dependencies (bebras_frontend)
+        run: |
+          cd bebras_frontend
+          composer install --prefer-dist --no-interaction
+
+      - name: ⚙️ Setup Environment (bebras_frontend)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_frontend
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: 🧪 Run Tests (bebras_frontend)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_frontend
+          php artisan test
+
+  # =========================================================================
+  # TAHAP 2: BUILD ASSETS & VALIDATION
+  # Memvalidasi kompilasi aset frontend dan admin (Vite/Tailwind)
+  # =========================================================================
+  build:
+    name: Build Assets & Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            bebras_frontend/package-lock.json
+            bebras_admin/package-lock.json
+
+      - name: 🔨 Build Frontend Assets (bebras_frontend)
+        run: |
+          cd bebras_frontend
+          npm ci
+          npm run build
+
+      - name: 🔨 Build Admin Assets (bebras_admin)
+        run: |
+          cd bebras_admin
+          if [ -f "package.json" ]; then
+            npm ci
+            npm run build
+          fi
+
+      - name: 📤 Upload Frontend Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: bebras_frontend/public/build/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: 📤 Upload Admin Public Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-public
+          path: bebras_admin/public/
+          if-no-files-found: error
+          retention-days: 1
