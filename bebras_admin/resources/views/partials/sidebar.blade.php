@@ -28,6 +28,12 @@
                     <div data-i18n="Berita">Berita</div>
                 </a>
             </li>
+            <li class="menu-item {{ Route::is('biro_koordinator.*') ? 'active' : '' }}">
+                <a href="{{ route('biro_koordinator.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-group"></i>
+                    <div data-i18n="Koordinator Biro">Koordinator Biro</div>
+                </a>
+            </li>
         @else
             {{-- Menu Admin / User --}}
             <!-- Dashboard -->
