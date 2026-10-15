@@ -342,6 +342,7 @@ jobs:
 
             # Laravel Optimization & Database Migration
             echo "Membersihkan & memperbarui cache Laravel..."
+            $PHP_BIN artisan optimize:clear
             $PHP_BIN artisan config:cache
             $PHP_BIN artisan route:cache
             $PHP_BIN artisan view:cache
@@ -351,6 +352,14 @@ jobs:
 
             # Memastikan symlink storage terpasang jika diperlukan
             $PHP_BIN artisan storage:link || true
+
+            # Memastikan symlink admin selalu mengarah ke bebras_admin/public
+            if [ -L "$TARGET_PATH/admin" ] || [ ! -e "$TARGET_PATH/admin" ]; then
+              ln -sfn "$TARGET_PATH/bebras_admin/public" "$TARGET_PATH/admin"
+            fi
+
+            # Memastikan permission storage dan bootstrap/cache dapat ditulis oleh web server
+            chmod -R 775 storage bootstrap/cache || true
 
             echo "✅ Deployment selesai dan aplikasi siap digunakan!"
           EOF
