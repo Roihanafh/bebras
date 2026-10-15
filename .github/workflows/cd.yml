@@ -1,0 +1,360 @@
+name: Continuous Deployment (CD)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  # =========================================================================
+  # TAHAP 1: PRE-DEPLOYMENT TESTS (GATEKEEPER)
+  # Memastikan seluruh test otomatis lulus sebelum proses deployment dimulai
+  # =========================================================================
+  test:
+    name: Pre-Deployment Automated Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: bebras_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, curl, zip
+          coverage: none
+
+      - name: ⚡ Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            bebras_admin/vendor
+            bebras_frontend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('bebras_admin/composer.lock', 'bebras_frontend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # ----------------- BACKEND TESTING (bebras_admin) -----------------
+      - name: 📦 Install Composer Dependencies (bebras_admin)
+        run: |
+          cd bebras_admin
+          composer install --prefer-dist --no-interaction
+
+      - name: ⚙️ Setup Environment & Migrations (bebras_admin)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_admin
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+
+      - name: 🧪 Run Tests (bebras_admin)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_admin
+          php artisan test
+
+      # ----------------- FRONTEND TESTING (bebras_frontend) -----------------
+      - name: 📦 Install Composer Dependencies (bebras_frontend)
+        run: |
+          cd bebras_frontend
+          composer install --prefer-dist --no-interaction
+
+      - name: ⚙️ Setup Environment (bebras_frontend)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_frontend
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: 🧪 Run Tests (bebras_frontend)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bebras_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          cd bebras_frontend
+          php artisan test
+
+  # =========================================================================
+  # TAHAP 2: BUILD PRODUCTION ASSETS
+  # =========================================================================
+  build:
+    name: Build Production Assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            bebras_frontend/package-lock.json
+            bebras_admin/package-lock.json
+
+      - name: 🔨 Build Frontend Assets (bebras_frontend)
+        run: |
+          cd bebras_frontend
+          npm ci
+          npm run build
+
+      - name: 🔨 Build Admin Assets (bebras_admin)
+        run: |
+          cd bebras_admin
+          if [ -f "package.json" ]; then
+            npm ci
+            npm run build
+          fi
+
+      - name: 📤 Upload Frontend Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: bebras_frontend/public/build/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: 📤 Upload Admin Public Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-public
+          path: bebras_admin/public/
+          if-no-files-found: error
+          retention-days: 1
+
+  # =========================================================================
+  # TAHAP 3: DEPLOY TO PRODUCTION (CD)
+  # Menunggu tahap test dan build selesai sebelum mengeksekusi backup & rsync
+  # =========================================================================
+  deploy:
+    name: Deploy to Production (CD)
+    needs: [test, build]
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+      TARGET_PATH: ${{ secrets.TARGET_PATH || '/home1/u11341aui/domain/bebras.or.id/bebras.or.id/web/v4' }}
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📥 Download Frontend Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: bebras_frontend/public/build/
+
+      - name: 📥 Download Admin Public Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-public
+          path: bebras_admin/public/
+
+      - name: 🔑 Configure SSH Key, Known Hosts & Connection Multiplexing
+        run: |
+          mkdir -p ~/.ssh ~/.ssh/sockets
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 644 ~/.ssh/known_hosts
+
+          # Konfigurasi SSH Connection Multiplexing (ControlMaster)
+          # Menggunakan 1 koneksi master persistent sehingga seluruh perintah ssh & rsync
+          # memakai socket yang sama tanpa re-handshake / bolak-balik koneksi baru.
+          cat << 'EOF' > ~/.ssh/config
+          Host *
+            Port ${{ secrets.SSH_PORT || '22' }}
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+            ControlMaster auto
+            ControlPath ~/.ssh/sockets/%r@%h-%p
+            ControlPersist 10m
+            ServerAliveInterval 60
+            ServerAliveCountMax 3
+          EOF
+          chmod 600 ~/.ssh/config
+
+      # ----------------- TAHAP 1: PRE-DEPLOYMENT BACKUP & PREPARE -----------------
+      - name: 💾 Pre-Deployment Backup & Directory Preparation
+        run: |
+          echo "Memulai Pre-Deployment Backup Database & Persiapan Direktori di server $SSH_HOST..."
+          ssh "$SSH_USER@$SSH_HOST" \
+            "DB_NAME_SECRET='${{ secrets.DB_NAME }}' DB_USER_SECRET='${{ secrets.DB_USER }}' DB_PASS_SECRET='${{ secrets.DB_PASSWORD }}' TARGET_PATH='$TARGET_PATH' bash -s" << 'EOF'
+            set -e
+            BACKUP_DIR="/home1/u11341aui/backups/mysql"
+            mkdir -p "$BACKUP_DIR" "$TARGET_PATH/bebras_admin" "$TARGET_PATH/admin" "$TARGET_PATH/build"
+            TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+            ENV_FILE="$TARGET_PATH/bebras_admin/.env"
+
+            # Ambil kredensial database dari .env jika secret tidak didefinisikan
+            if [ -f "$ENV_FILE" ]; then
+              DB_HOST_ENV=$(grep -E '^DB_HOST=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d ' "\r')
+              DB_PORT_ENV=$(grep -E '^DB_PORT=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d ' "\r')
+              DB_NAME_ENV=$(grep -E '^DB_DATABASE=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d ' "\r')
+              DB_USER_ENV=$(grep -E '^DB_USERNAME=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d ' "\r')
+              DB_PASS_ENV=$(grep -E '^DB_PASSWORD=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d ' "\r')
+            fi
+
+            DB_HOST="${DB_HOST_ENV:-127.0.0.1}"
+            DB_PORT="${DB_PORT_ENV:-3306}"
+            DB_NAME="${DB_NAME_SECRET:-$DB_NAME_ENV}"
+            DB_USER="${DB_USER_SECRET:-$DB_USER_ENV}"
+            DB_PASS="${DB_PASS_SECRET:-$DB_PASS_ENV}"
+
+            if [ -n "$DB_NAME" ] && [ -n "$DB_USER" ]; then
+              BACKUP_FILE="$BACKUP_DIR/backup_${DB_NAME}_${TIMESTAMP}.sql.gz"
+              echo "==> Mengeksekusi mysqldump untuk database: $DB_NAME..."
+              if [ -n "$DB_PASS" ]; then
+                mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" | gzip > "$BACKUP_FILE"
+              else
+                mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" | gzip > "$BACKUP_FILE"
+              fi
+              echo "==> Backup berhasil disimpan di: $BACKUP_FILE"
+              ls -lh "$BACKUP_FILE"
+
+              # Rotasi backup: Hapus backup yang lebih lama dari 14 hari
+              find "$BACKUP_DIR" -type f -name "*.sql.gz" -mtime +14 -delete
+            else
+              echo "==> [PERINGATAN] Kredensial database tidak ditemukan di secrets maupun .env. Backup dilewati."
+            fi
+          EOF
+
+      # ----------------- TAHAP 2: SINKRONISASI FILE (RSYNC VIA MASTER SSH) -----------------
+      - name: 🚀 Sync Files to Production Server (Rsync)
+        run: |
+          echo "1/3. Menyinkronkan source code bebras_admin..."
+          rsync -avz --delete \
+            -e ssh \
+            --exclude='.env*' \
+            --exclude='storage/' \
+            --exclude='vendor/' \
+            --exclude='node_modules/' \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='tests/' \
+            --exclude='*.xlsx' \
+            --exclude='*.xls' \
+            --exclude='Hasil-BC*' \
+            --filter='P .env*' \
+            --filter='P storage/' \
+            --filter='P vendor/' \
+            --filter='P *.xlsx' \
+            --filter='P *.xls' \
+            --filter='P Hasil-BC*' \
+            ./bebras_admin/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/bebras_admin/"
+
+          echo "2/3. Menyinkronkan aset public bebras_admin ke admin/..."
+          rsync -avz \
+            -e ssh \
+            --exclude='.env*' \
+            --exclude='storage' \
+            --exclude='*.xlsx' \
+            --exclude='*.xls' \
+            --exclude='Hasil-BC*' \
+            --exclude='.git/' \
+            --filter='P .env*' \
+            --filter='P storage' \
+            --filter='P *.xlsx' \
+            --filter='P *.xls' \
+            --filter='P Hasil-BC*' \
+            ./bebras_admin/public/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/admin/"
+
+          echo "3/3. Menyinkronkan hasil build frontend ke build/..."
+          rsync -avz --delete \
+            -e ssh \
+            --exclude='*.xlsx' \
+            --exclude='*.xls' \
+            --exclude='Hasil-BC*' \
+            --filter='P *.xlsx' \
+            --filter='P *.xls' \
+            --filter='P Hasil-BC*' \
+            ./bebras_frontend/public/build/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/build/"
+
+      # ----------------- TAHAP 3: POST-DEPLOYMENT HOOKS -----------------
+      - name: ⚡ Run Post-Deployment Commands (Artisan & Cache)
+        run: |
+          echo "Menjalankan perintah post-deploy di server..."
+          ssh "$SSH_USER@$SSH_HOST" \
+            "TARGET_PATH='$TARGET_PATH' bash -s" << 'EOF'
+            set -e
+            cd "$TARGET_PATH/bebras_admin"
+
+            # Deteksi PHP 8.2 binary di cPanel (ea-php82) atau fallback ke 'php'
+            PHP_BIN="php"
+            if command -v /usr/local/bin/ea-php82 &> /dev/null; then
+              PHP_BIN="/usr/local/bin/ea-php82"
+            elif command -v /opt/cpanel/ea-php82/root/usr/bin/php &> /dev/null; then
+              PHP_BIN="/opt/cpanel/ea-php82/root/usr/bin/php"
+            fi
+            echo "Menggunakan PHP binary: $($PHP_BIN -v | head -n 1)"
+
+            # Update dependency di server jika composer tersedia
+            if command -v composer &> /dev/null; then
+              echo "Menjalankan composer install di server..."
+              composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+            fi
+
+            # Laravel Optimization & Database Migration
+            echo "Membersihkan & memperbarui cache Laravel..."
+            $PHP_BIN artisan config:cache
+            $PHP_BIN artisan route:cache
+            $PHP_BIN artisan view:cache
+            
+            echo "Menjalankan migrasi database..."
+            $PHP_BIN artisan migrate --force
+
+            # Memastikan symlink storage terpasang jika diperlukan
+            $PHP_BIN artisan storage:link || true
+
+            echo "✅ Deployment selesai dan aplikasi siap digunakan!"
+          EOF
+
+      # ----------------- TAHAP 4: CLOSE MASTER SSH CONNECTION -----------------
+      - name: 🔒 Close Master SSH Connection
+        if: always()
+        run: |
+          ssh -O exit "$SSH_USER@$SSH_HOST" 2>/dev/null || true
