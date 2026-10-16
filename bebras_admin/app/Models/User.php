@@ -35,6 +35,11 @@ class User extends Authenticatable
         return $this->hasMany(KoordinatorBiro::class, 'user_id');
     }
 
+    public function anggotaBiro()
+    {
+        return $this->hasMany(AnggotaBiro::class, 'biro_id');
+    }
+
     public function hasRole($role)
     {
         return $this->roles()->where('name', $role)->exists();

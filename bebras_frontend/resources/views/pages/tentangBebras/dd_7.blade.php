@@ -42,14 +42,49 @@
 
                     <ol>
                         @forelse($biros as $biro)
-                            <li>
-                                <span class="font-semibold text-gray-800">{{ $biro->name }}</span>
-                                @if($biro->koordinatorBiro && $biro->koordinatorBiro->count() > 0)
-                                    @foreach($biro->koordinatorBiro as $koordinator)
-                                        <span class="text-gray-400 mx-1">|</span>
-                                        <a href="mailto:{{ $koordinator->email }}" title="{{ $koordinator->email }}">{{ $koordinator->nama }}</a>
-                                    @endforeach
-                                @endif
+                            <li class="biro-list-item mb-4 pb-2 border-b border-gray-100 last:border-b-0" id="biro-item-{{ $biro->id }}">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <span class="font-semibold text-gray-800 cursor-pointer hover:text-[#087E9B] transition-colors btn-toggle-biro" data-biro-id="{{ $biro->id }}">
+                                            {{ $biro->name }}
+                                        </span>
+                                        @if($biro->koordinatorBiro && $biro->koordinatorBiro->count() > 0)
+                                            <span class="text-gray-600">
+                                                @foreach($biro->koordinatorBiro as $koordinator)
+                                                    <span class="text-gray-400 mx-1">|</span>
+                                                    <a href="mailto:{{ $koordinator->email }}" title="{{ $koordinator->email }}">{{ $koordinator->nama }}</a>
+                                                @endforeach
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <button type="button" class="btn-toggle-biro not-prose inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-[#087E9B] hover:bg-[#087E9B] hover:text-white transition-all cursor-pointer shadow-xs" data-biro-id="{{ $biro->id }}" title="Klik untuk melihat anggota biro">
+                                        <i class="fa-solid fa-users text-[11px]"></i>
+                                        <span>Anggota</span>
+                                        <span class="bg-white text-[#087E9B] px-1.5 py-0.2 rounded-full text-[10px] font-bold border border-cyan-100">{{ $biro->anggotaBiro->count() }}</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 biro-chevron-{{ $biro->id }}"></i>
+                                    </button>
+                                </div>
+
+                                {{-- Accordion Anggota Biro --}}
+                                <div class="anggota-accordion-panel not-prose hidden mt-3 pt-2 pb-1 pl-3 md:pl-4 border-l-2 border-[#00B8D4]" id="anggota-panel-{{ $biro->id }}">
+                                    <div class="text-xs font-bold uppercase tracking-wider text-cyan-800 mb-2.5 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-id-badge text-[#087E9B]"></i>
+                                        <span>Anggota {{ $biro->name }}</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        @forelse($biro->anggotaBiro as $anggota)
+                                            <div class="rounded-xl border border-gray-200 bg-gray-50/80 px-3.5 py-2.5 flex items-center justify-between hover:bg-cyan-50/40 hover:border-cyan-200 transition-colors shadow-xs">
+                                                <div class="font-semibold text-gray-800 text-sm md:text-base">
+                                                    {{ $anggota->no_anggota ? $anggota->no_anggota . ' — ' : '' }}{{ $anggota->nama }}
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-xs text-gray-500 italic">
+                                                Belum ada anggota yang disetujui untuk biro ini.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
                             </li>
                         @empty
                             <li class="text-gray-500 italic">Belum ada biro terdaftar.</li>
@@ -84,3 +119,31 @@
         }
     </style>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.btn-toggle-biro').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                // Hindari trigger jika klik pada link koordinator
+                if (e.target.tagName.toLowerCase() === 'a') return;
+
+                const biroId = this.getAttribute('data-biro-id');
+                const panel = document.getElementById('anggota-panel-' + biroId);
+                const chevrons = document.querySelectorAll('.biro-chevron-' + biroId);
+
+                if (panel) {
+                    const isHidden = panel.classList.contains('hidden');
+                    if (isHidden) {
+                        panel.classList.remove('hidden');
+                        chevrons.forEach(c => c.classList.add('rotate-180'));
+                    } else {
+                        panel.classList.add('hidden');
+                        chevrons.forEach(c => c.classList.remove('rotate-180'));
+                    }
+                }
+            });
+        });
+    });
+</script>
+@endpush

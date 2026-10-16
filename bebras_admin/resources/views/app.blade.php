@@ -67,6 +67,46 @@
         .swal2-container {
             z-index: 1090 !important;
         }
+
+        /* High contrast table header fix for table-dark and DataTables */
+        .table thead.table-dark th,
+        .table thead.table-dark tr th,
+        table.dataTable thead.table-dark th,
+        table.table-dark thead th,
+        .table-header-contrast th {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+            letter-spacing: 0.6px !important;
+            text-transform: uppercase !important;
+        }
+
+        /* Sorting icons high contrast */
+        table.dataTable thead.table-dark > tr > th.sorting:before,
+        table.dataTable thead.table-dark > tr > th.sorting:after,
+        table.dataTable thead.table-dark > tr > th.sorting_asc:before,
+        table.dataTable thead.table-dark > tr > th.sorting_asc:after,
+        table.dataTable thead.table-dark > tr > th.sorting_desc:before,
+        table.dataTable thead.table-dark > tr > th.sorting_desc:after,
+        table.dataTable thead.table-header-contrast > tr > th.sorting:before,
+        table.dataTable thead.table-header-contrast > tr > th.sorting:after,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_asc:before,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_asc:after,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_desc:before,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_desc:after {
+            color: #ffffff !important;
+            opacity: 0.6 !important;
+        }
+
+        table.dataTable thead.table-dark > tr > th.sorting_asc:after,
+        table.dataTable thead.table-dark > tr > th.sorting_desc:before,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_asc:after,
+        table.dataTable thead.table-header-contrast > tr > th.sorting_desc:before {
+            color: #38bdf8 !important;
+            opacity: 1 !important;
+        }
     </style>
   </head>
 

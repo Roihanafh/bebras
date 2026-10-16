@@ -34,6 +34,12 @@
                     <div data-i18n="Koordinator Biro">Koordinator Biro</div>
                 </a>
             </li>
+            <li class="menu-item {{ Route::is('biro_anggota.*') ? 'active' : '' }}">
+                <a href="{{ route('biro_anggota.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-id-card"></i>
+                    <div data-i18n="Anggota Biro">Anggota Biro</div>
+                </a>
+            </li>
         @else
             {{-- Menu Admin / User --}}
             <!-- Dashboard -->
@@ -63,6 +69,14 @@
                 <a href="{{ route('biro.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-buildings"></i>
                     <div data-i18n="Biro">Biro</div>
+                </a>
+            </li>
+
+            <!-- Anggota Biro -->
+            <li class="menu-item {{ Route::is('admin.anggota_biro.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.anggota_biro.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-id-card"></i>
+                    <div data-i18n="Anggota Biro">Anggota Biro</div>
                 </a>
             </li>
             @php

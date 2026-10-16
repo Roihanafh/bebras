@@ -44,15 +44,27 @@
                     <i class="bx bx-plus me-1"></i> Tambah Koordinator
                 </button>
             </div>
+<style>
+    #tableKoordinatorSaya thead th,
+    #tableKoordinatorSaya thead.table-dark th {
+        color: #ffffff !important;
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+    }
+</style>
             <div class="card-body">
                 <div class="table-responsive text-nowrap">
                     <table class="table table-bordered table-striped" id="tableKoordinatorSaya" style="width:100%">
-                        <thead class="table-dark">
+                        <thead class="table-dark" style="background-color: #1e293b;">
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th>Nama Koordinator</th>
-                                <th>Email Koordinator</th>
-                                <th style="width: 160px;">Aksi</th>
+                                <th class="text-white" style="width: 50px; color: #fff !important;">#</th>
+                                <th class="text-white" style="color: #fff !important;">Nama Koordinator</th>
+                                <th class="text-white" style="color: #fff !important;">Email Koordinator</th>
+                                <th class="text-white" style="width: 160px; color: #fff !important;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody></tbody>

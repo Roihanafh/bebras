@@ -22,7 +22,14 @@ class TentangBebrasController extends Controller
         if ($template === 'dd_7' || str_contains($slug, 'biro')) {
             $biros = User::whereHas('roles', function ($q) {
                 $q->where('name', 'biro');
-            })->with('koordinatorBiro')->orderByRaw('kode_biro IS NULL, kode_biro ASC, name ASC')->get();
+            })->with([
+                'koordinatorBiro',
+                'anggotaBiro' => function ($q) {
+                    $q->where('status_validasi', 'approved')
+                        ->orderBy('no_anggota', 'asc')
+                        ->orderBy('nama', 'asc');
+                }
+            ])->orderByRaw('kode_biro IS NULL, kode_biro ASC, name ASC')->get();
         }
 
         return view($viewName, compact('page', 'biros'));

@@ -20,6 +20,8 @@ use App\Http\Controllers\Biro\KoordinatorBiroController;
 use App\Http\Controllers\Berita\BeritaBiroController;
 use App\Http\Controllers\Berita\BeritaAdminController;
 use App\Http\Controllers\Pengumuman\PengumumanAdminController;
+use App\Http\Controllers\AnggotaBiroAdminController;
+use App\Http\Controllers\Biro\AnggotaBiroController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -53,6 +55,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/{id}/koordinator', [BiroController::class, 'storeKoordinator'])->name('koordinator.store');
         Route::put('/koordinator/{id}', [BiroController::class, 'updateKoordinator'])->name('koordinator.update');
         Route::delete('/koordinator/{id}', [BiroController::class, 'destroyKoordinator'])->name('koordinator.destroy');
+    });
+
+    // Manajemen Anggota Biro (Admin)
+    Route::prefix('admin/anggota-biro')->name('admin.anggota_biro.')->group(function () {
+        Route::get('/', [AnggotaBiroAdminController::class, 'index'])->name('index');
+        Route::get('/list', [AnggotaBiroAdminController::class, 'list'])->name('list');
+        Route::get('/next-no/{biroId}', [AnggotaBiroAdminController::class, 'getNextNo'])->name('next_no');
+        Route::post('/store', [AnggotaBiroAdminController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AnggotaBiroAdminController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AnggotaBiroAdminController::class, 'update'])->name('update');
+        Route::post('/{id}/approve', [AnggotaBiroAdminController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [AnggotaBiroAdminController::class, 'reject'])->name('reject');
+        Route::delete('/{id}', [AnggotaBiroAdminController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('tentang-bebras')->group(function () {
@@ -255,5 +270,16 @@ Route::middleware(['auth', 'role:biro'])->group(function () {
         Route::get('/{id}/edit', [KoordinatorBiroController::class, 'edit'])->name('edit');
         Route::put('/{id}', [KoordinatorBiroController::class, 'update'])->name('update');
         Route::delete('/{id}', [KoordinatorBiroController::class, 'destroy'])->name('destroy');
+    });
+
+    // Routes untuk Anggota Biro (role biro)
+    Route::prefix('anggota-biro')->name('biro_anggota.')->group(function () {
+        Route::get('/', [AnggotaBiroController::class, 'index'])->name('index');
+        Route::get('/list', [AnggotaBiroController::class, 'list'])->name('list');
+        Route::get('/next-no', [AnggotaBiroController::class, 'getNextNo'])->name('next_no');
+        Route::post('/store', [AnggotaBiroController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AnggotaBiroController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AnggotaBiroController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AnggotaBiroController::class, 'destroy'])->name('destroy');
     });
 });

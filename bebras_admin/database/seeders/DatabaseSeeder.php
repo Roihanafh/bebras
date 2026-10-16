@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CmsContentSeeder::class,
             MitraSeeder::class,
             BiroSeeder::class,
+            AnggotaBiroSeeder::class,
         ]);
     }
 }

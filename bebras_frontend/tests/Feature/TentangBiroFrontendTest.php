@@ -109,4 +109,98 @@ class TentangBiroFrontendTest extends TestCase
         $res2->assertSee('mailto:baru@example.com');
         $res2->assertDontSee('Nama Lama');
     }
+
+    public function test_halaman_tentang_biro_hanya_menampilkan_anggota_yang_disetujui_approved(): void
+    {
+        // Anggota approved
+        $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Budi Approved',
+            'tahun_masuk'     => 2023,
+            'tanggal_lahir'   => '2005-10-10',
+            'no_anggota'      => '001',
+            'status_validasi' => 'approved',
+        ]);
+
+        // Anggota pending
+        $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Siti Pending',
+            'tahun_masuk'     => 2024,
+            'tanggal_lahir'   => '2006-05-05',
+            'no_anggota'      => '002',
+            'status_validasi' => 'pending',
+        ]);
+
+        // Anggota rejected
+        $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Rudi Rejected',
+            'tahun_masuk'     => 2024,
+            'tanggal_lahir'   => '2006-08-08',
+            'no_anggota'      => '003',
+            'status_validasi' => 'rejected',
+        ]);
+
+        $response = $this->get(route('tentangBebras.dd_7'));
+        $response->assertStatus(200);
+
+        // Hanya anggota approved yang muncul
+        $response->assertSee('001 — Budi Approved');
+        $response->assertDontSee('Siti Pending');
+        $response->assertDontSee('Rudi Rejected');
+    }
+
+    public function test_accordion_anggota_biro_hanya_menampilkan_nama_dan_tidak_menampilkan_detail_sensitif(): void
+    {
+        $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Budi Santoso',
+            'tahun_masuk'     => 2022,
+            'tanggal_lahir'   => '2005-12-25',
+            'no_anggota'      => '001',
+            'status_validasi' => 'approved',
+        ]);
+
+        $response = $this->get(route('tentangBebras.dd_7'));
+        $response->assertStatus(200);
+
+        $response->assertSee('Budi Santoso');
+        // Tanggal lahir tidak boleh ditampilkan di frontend publik
+        $response->assertDontSee('2005-12-25');
+        $response->assertDontSee('25/12/2005');
+        // Status validasi tidak boleh ditampilkan di accordion publik
+        $response->assertDontSee('status_validasi');
+    }
+
+    public function test_biro_berbeda_dengan_nomor_anggota_sama_tampil_sesuai_bironya(): void
+    {
+        $biroRole = Role::firstOrCreate(['name' => 'biro']);
+        $biro2 = User::create([
+            'name'      => 'Universitas Indonesia',
+            'username'  => 'biro_ui_' . uniqid(),
+            'email'     => 'biro_ui_' . uniqid() . '@ui.ac.id',
+            'password'  => Hash::make('password'),
+            'kode_biro' => '002',
+        ]);
+        $biro2->roles()->attach($biroRole->id);
+
+        $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Anggota ITB',
+            'tahun_masuk'     => 2023,
+            'tanggal_lahir'   => '2005-01-01',
+            'no_anggota'      => '001',
+            'status_validasi' => 'approved',
+        ]);
+
+        $biro2->anggotaBiro()->create([
+            'nama'            => 'Anggota UI',
+            'tahun_masuk'     => 2023,
+            'tanggal_lahir'   => '2005-02-02',
+            'no_anggota'      => '001',
+            'status_validasi' => 'approved',
+        ]);
+
+        $response = $this->get(route('tentangBebras.dd_7'));
+        $response->assertStatus(200);
+
+        $response->assertSee('001 — Anggota ITB');
+        $response->assertSee('001 — Anggota UI');
+    }
 }
