@@ -228,7 +228,7 @@ jobs:
             "DB_NAME_SECRET='${{ secrets.DB_NAME }}' DB_USER_SECRET='${{ secrets.DB_USER }}' DB_PASS_SECRET='${{ secrets.DB_PASSWORD }}' TARGET_PATH='$TARGET_PATH' bash -s" << 'EOF'
             set -e
             BACKUP_DIR="/home1/u11341aui/backups/mysql"
-            mkdir -p "$BACKUP_DIR" "$TARGET_PATH/bebras_admin" "$TARGET_PATH/admin" "$TARGET_PATH/build"
+            mkdir -p "$BACKUP_DIR" "$TARGET_PATH/bebras_admin" "$TARGET_PATH/admin" "$TARGET_PATH/build" "$TARGET_PATH/css" "$TARGET_PATH/img" "$TARGET_PATH/js"
             TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
             ENV_FILE="$TARGET_PATH/bebras_admin/.env"
 
@@ -268,7 +268,7 @@ jobs:
       # ----------------- TAHAP 2: SINKRONISASI FILE (RSYNC VIA MASTER SSH) -----------------
       - name: 🚀 Sync Files to Production Server (Rsync)
         run: |
-          echo "1/3. Menyinkronkan source code bebras_admin..."
+          echo "1/4. Menyinkronkan source code bebras_admin..."
           rsync -avz --delete \
             -e ssh \
             --exclude='.env*' \
@@ -289,7 +289,7 @@ jobs:
             --filter='P Hasil-BC*' \
             ./bebras_admin/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/bebras_admin/"
 
-          echo "2/3. Menyinkronkan aset public bebras_admin ke admin/..."
+          echo "2/4. Menyinkronkan aset public bebras_admin ke admin/..."
           rsync -avz \
             -e ssh \
             --exclude='.env*' \
@@ -305,7 +305,7 @@ jobs:
             --filter='P Hasil-BC*' \
             ./bebras_admin/public/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/admin/"
 
-          echo "3/3. Menyinkronkan hasil build frontend ke build/..."
+          echo "3/4. Menyinkronkan hasil build frontend ke build/..."
           rsync -avz --delete \
             -e ssh \
             --exclude='*.xlsx' \
@@ -315,6 +315,33 @@ jobs:
             --filter='P *.xls' \
             --filter='P Hasil-BC*' \
             ./bebras_frontend/public/build/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/build/"
+
+          echo "4/4. Menyinkronkan folder aset statis frontend (css, img, js)..."
+          rsync -avz --delete \
+            -e ssh \
+            ./bebras_frontend/public/css/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/css/"
+
+          rsync -avz --delete \
+            -e ssh \
+            ./bebras_frontend/public/js/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/js/"
+
+          rsync -avz \
+            -e ssh \
+            --exclude='*.xlsx' \
+            --exclude='*.xls' \
+            --exclude='Hasil-BC*' \
+            --filter='P *.xlsx' \
+            --filter='P *.xls' \
+            --filter='P Hasil-BC*' \
+            ./bebras_frontend/public/img/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/img/"
+
+          # Sinkronkan file statis root di public (favicon, robots) jika ada
+          rsync -avz \
+            -e ssh \
+            --include='favicon.ico' \
+            --include='robots.txt' \
+            --exclude='*' \
+            ./bebras_frontend/public/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/"
 
       # ----------------- TAHAP 3: POST-DEPLOYMENT HOOKS -----------------
       - name: ⚡ Run Post-Deployment Commands (Artisan & Cache)
