@@ -344,8 +344,8 @@ jobs:
             echo "Membersihkan & memperbarui cache Laravel..."
             $PHP_BIN artisan optimize:clear
             $PHP_BIN artisan config:cache
-            $PHP_BIN artisan route:cache
-            $PHP_BIN artisan view:cache
+            $PHP_BIN artisan route:clear
+            $PHP_BIN artisan view:clear
             
             echo "Menjalankan migrasi database..."
             $PHP_BIN artisan migrate --force
@@ -358,8 +358,8 @@ jobs:
               ln -sfn "$TARGET_PATH/bebras_admin/public" "$TARGET_PATH/admin"
             fi
 
-            # Memastikan permission storage dan bootstrap/cache dapat ditulis oleh web server
-            chmod -R 775 storage bootstrap/cache || true
+            # Memastikan permission storage dan bootstrap/cache dapat ditulis penuh oleh web server
+            chmod -R 777 storage bootstrap/cache || true
 
             echo "✅ Deployment selesai dan aplikasi siap digunakan!"
           EOF
