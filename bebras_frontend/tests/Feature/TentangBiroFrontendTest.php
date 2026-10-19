@@ -203,4 +203,83 @@ class TentangBiroFrontendTest extends TestCase
         $response->assertSee('001 — Anggota ITB');
         $response->assertSee('001 — Anggota UI');
     }
+
+    public function test_halaman_dd7_menyediakan_modal_kartu_member_dan_trigger_klik(): void
+    {
+        $anggota = $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'M. Unggul Pamenang',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '1991-05-10',
+            'no_anggota'      => '764',
+            'status_validasi' => 'approved',
+        ]);
+
+        $response = $this->get(route('tentangBebras.dd_7'));
+        $response->assertStatus(200);
+
+        // Memastikan markup modal ada di halaman
+        $response->assertSee('id="member-card-modal"', false);
+        $response->assertSee('id="modal-card-qr"', false);
+
+        // Memastikan item anggota memiliki trigger dan data-attributes yang tepat
+        $response->assertSee('data-id-member="0012691764"', false);
+        $response->assertSee('M. Unggul Pamenang');
+        $response->assertSee('Kartu Member');
+    }
+
+    public function test_halaman_kartu_member_dapat_diakses_untuk_anggota_approved(): void
+    {
+        $anggota = $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'M. Unggul Pamenang',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '1991-05-10',
+            'no_anggota'      => '764',
+            'status_validasi' => 'approved',
+        ]);
+
+        $response = $this->get(route('tentangBebras.anggota.card', $anggota->id));
+        $response->assertStatus(200);
+
+        $response->assertSee('M. Unggul Pamenang');
+        $response->assertSee('0012691764');
+        $response->assertSee('Institut Teknologi Bandung');
+        $response->assertSee($anggota->formatted_expiry_date);
+        $response->assertSee(route('tentangBebras.anggota.card.download', $anggota->id));
+    }
+
+    public function test_halaman_kartu_member_tidak_bisa_diakses_untuk_anggota_pending_atau_rejected(): void
+    {
+        $pendingAnggota = $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'Anggota Masih Pending',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '2005-01-01',
+            'no_anggota'      => '002',
+            'status_validasi' => 'pending',
+        ]);
+
+        $resPending = $this->get(route('tentangBebras.anggota.card', $pendingAnggota->id));
+        $resPending->assertStatus(404);
+
+        $resDownloadPending = $this->get(route('tentangBebras.anggota.card.download', $pendingAnggota->id));
+        $resDownloadPending->assertStatus(404);
+    }
+
+    public function test_download_kartu_member_pdf_menghasilkan_file_pdf(): void
+    {
+        $anggota = $this->biroUser->anggotaBiro()->create([
+            'nama'            => 'M. Unggul Pamenang',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '1991-05-10',
+            'no_anggota'      => '764',
+            'status_validasi' => 'approved',
+        ]);
+
+        $response = $this->get(route('tentangBebras.anggota.card.download', $anggota->id));
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
+
+        $contentDisposition = $response->headers->get('content-disposition');
+        $this->assertStringContainsString('kartu-member-0012691764.pdf', $contentDisposition);
+    }
 }
+

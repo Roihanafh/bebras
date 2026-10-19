@@ -19,6 +19,8 @@ Route::prefix('tentangBebras')->name('tentangBebras.')->group(function () {
     Route::get('/dd_5', [TentangBebrasController::class, 'show'])->defaults('slug', 'dd_5')->name('dd_5');
     Route::get('/dd_6', [TentangBebrasController::class, 'show'])->defaults('slug', 'dd_6')->name('dd_6');
     Route::get('/dd_7', [TentangBebrasController::class, 'show'])->defaults('slug', 'dd_7')->name('dd_7');
+    Route::get('/anggota/{id}/card', [TentangBebrasController::class, 'memberCard'])->name('anggota.card');
+    Route::get('/anggota/{id}/card/download', [TentangBebrasController::class, 'downloadMemberCard'])->name('anggota.card.download');
     Route::get('/{slug}', [TentangBebrasController::class, 'show'])->name('show');
 });
 
