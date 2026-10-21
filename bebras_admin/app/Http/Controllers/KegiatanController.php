@@ -98,7 +98,10 @@ class KegiatanController extends Controller
 
         DB::beginTransaction();
         try {
-            if ($request->hasFile('gambar')) {
+            $menu = MenuKegiatan::find($validated['menu_kegiatan_id']);
+            if ($menu && $menu->resolveTemplate() === 'pengumuman_hasil') {
+                $validated['gambar'] = null;
+            } elseif ($request->hasFile('gambar')) {
                 $validated['gambar'] = $request->file('gambar')->store('kegiatan', 'public');
             }
             Kegiatan::create($validated);
@@ -153,7 +156,13 @@ class KegiatanController extends Controller
 
         DB::beginTransaction();
         try {
-            if ($request->hasFile('gambar')) {
+            $menu = MenuKegiatan::find($validated['menu_kegiatan_id']);
+            if ($menu && $menu->resolveTemplate() === 'pengumuman_hasil') {
+                if ($data->gambar && Storage::disk('public')->exists($data->gambar)) {
+                    Storage::disk('public')->delete($data->gambar);
+                }
+                $validated['gambar'] = null;
+            } elseif ($request->hasFile('gambar')) {
                 if ($data->gambar && Storage::disk('public')->exists($data->gambar)) {
                     Storage::disk('public')->delete($data->gambar);
                 }

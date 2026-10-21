@@ -169,7 +169,7 @@
         const fieldGambar        = document.getElementById('field-gambar');
         const fieldDeskripsi     = document.getElementById('field-deskripsi');
 
-        if (template === 'bebras_challenge' || template === 'pengumuman_hasil') {
+        if (template === 'bebras_challenge') {
             // Sembunyikan alert statistik dan tampilkan tombol submit
             const alertStatistik = document.getElementById('alert-statistik');
             if (alertStatistik) { alertStatistik.style.display = 'none'; }
@@ -196,6 +196,45 @@
             fieldGambar.style.display = '';
             fieldGambar.querySelectorAll('input, select, textarea').forEach(el => {
                 el.disabled = false;
+            });
+
+            // Sembunyikan, nonaktifkan, dan kosongkan kota / tanggal_lokasi / speaker
+            [fieldKota, fieldTanggalLokasi, fieldSpeaker].forEach(function (field) {
+                field.style.display = 'none';
+                field.querySelectorAll('input, select, textarea').forEach(function (el) {
+                    el.disabled = true;
+                    el.value = '';
+                });
+            });
+
+        } else if (template === 'pengumuman_hasil') {
+            // Sembunyikan alert statistik dan tampilkan tombol submit
+            const alertStatistik = document.getElementById('alert-statistik');
+            if (alertStatistik) { alertStatistik.style.display = 'none'; }
+            const submitBtn = document.querySelector('[type="submit"]');
+            if (submitBtn) { submitBtn.style.display = ''; }
+            // Kembalikan field judul dan urutan ke state normal
+            const fieldJudul = document.querySelector('[name="judul"]')?.closest('.mb-3');
+            if (fieldJudul) {
+                fieldJudul.style.display = '';
+                fieldJudul.querySelectorAll('input').forEach(el => el.disabled = false);
+            }
+            const fieldUrutan = document.querySelector('[name="urutan"]')?.closest('.mb-3');
+            if (fieldUrutan) {
+                fieldUrutan.style.display = '';
+                fieldUrutan.querySelectorAll('input').forEach(el => el.disabled = false);
+            }
+
+            // Inisialisasi TinyMCE pada #deskripsi jika belum aktif
+            if (typeof tinymce !== 'undefined' && !tinymce.get('deskripsi')) {
+                initTinyMCE('#deskripsi');
+            }
+
+            // Hilangkan field gambar khusus pada template pengumuman hasil
+            fieldGambar.style.display = 'none';
+            fieldGambar.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = true;
+                el.value = '';
             });
 
             // Sembunyikan, nonaktifkan, dan kosongkan kota / tanggal_lokasi / speaker

@@ -419,6 +419,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'Workshop',
             'slug' => 'workshop',
             'judul' => 'Workshop Bebras Indonesia',
+            'template' => 'workshop',
             'urutan' => 1,
         ]);
         MenuKegiatan::create([
@@ -442,6 +443,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'Bebras Challenge',
             'slug' => 'bebras-challenge',
             'judul' => 'Tantangan Bebras Indonesia',
+            'template' => 'bebras_challenge',
             'urutan' => 2,
         ]);
         MenuKegiatan::create([
@@ -482,6 +484,7 @@ class CmsContentSeeder extends Seeder
             'slug' => 'statistik-bebras-indonesia-challenge',
             'judul' => 'Statistik Bebras Indonesia Challenge',
             'body' => '<p>Berikut statistik sebaran peserta dan sekolah yang berpartisipasi dalam Bebras Challenge nasional.</p>',
+            'template' => 'statistik',
             'urutan' => 3,
         ]);
 
@@ -489,6 +492,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'Pengumuman Hasil',
             'slug' => 'pengumuman-hasil',
             'judul' => 'Pengumuman Hasil',
+            'template' => 'pengumuman_hasil',
             'urutan' => 4,
         ]);
         MenuKegiatan::create([
@@ -528,6 +532,7 @@ class CmsContentSeeder extends Seeder
             'nama_menu' => 'CT Challenge 2023 For Teachers',
             'slug' => 'ct-challenge-2023-for-teachers',
             'judul' => 'CT Challenge 2023 For Teachers',
+            'template' => 'pengumuman_hasil',
             'urutan' => 5,
         ]);
         MenuKegiatan::create([
