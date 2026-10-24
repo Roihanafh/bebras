@@ -50,7 +50,7 @@
 
 <!-- Modal Kelola Koordinator -->
 <div class="modal fade" id="modalKoordinator" tabindex="-1" aria-labelledby="modalKoordinatorLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
@@ -68,21 +68,35 @@
                             @csrf
                             <input type="hidden" id="koordinator_id" name="koordinator_id" value="">
                             <input type="hidden" id="biro_user_id" name="biro_user_id" value="">
-                            <div class="row g-2">
-                                <div class="col-md-5">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
                                     <label class="form-label">Nama Koordinator <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-sm" id="koordinator_nama" name="nama" placeholder="Contoh: Budi Santoso" required>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <label class="form-label">Email Koordinator <span class="text-danger">*</span></label>
                                     <input type="email" class="form-control form-control-sm" id="koordinator_email" name="email" placeholder="contoh: budi@example.com" required>
                                 </div>
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <div class="w-100">
-                                        <button type="submit" class="btn btn-sm btn-primary w-100" id="btnSubmitKoordinator">
+                                <div class="col-md-4">
+                                    <label class="form-label">Username <span class="text-muted small">(opsional)</span></label>
+                                    <input type="text" class="form-control form-control-sm font-monospace" id="koordinator_username" name="username" placeholder="Otomatis jika kosong">
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">Password <span class="text-muted small" id="labelKoordinatorPassword">(default: bebras123)</span></label>
+                                    <input type="text" class="form-control form-control-sm font-monospace" id="koordinator_password" name="password" placeholder="Default: bebras123">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Nomor Telepon / WA <span class="text-muted small">(opsional)</span></label>
+                                    <input type="text" class="form-control form-control-sm" id="koordinator_telepon" name="telepon" placeholder="Contoh: 08123456789">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <div class="w-100 d-flex gap-2">
+                                        <button type="submit" class="btn btn-sm btn-primary flex-grow-1" id="btnSubmitKoordinator">
                                             <i class="bx bx-plus"></i> Simpan
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-1 d-none" id="btnCancelEditKoordinator">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="btnCancelEditKoordinator">
                                             Batal
                                         </button>
                                     </div>
@@ -101,12 +115,15 @@
                                 <th style="width: 40px;">#</th>
                                 <th>Nama</th>
                                 <th>Email</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Telepon</th>
                                 <th style="width: 140px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyKoordinator">
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-3">Memuat data koordinator...</td>
+                                <td colspan="7" class="text-center text-muted py-3">Memuat data koordinator...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -226,7 +243,7 @@ $(document).ready(function() {
 
     // Helper untuk memuat data koordinator ke modal
     function loadKoordinator(biroId) {
-        $('#tbodyKoordinator').html('<tr><td colspan="4" class="text-center text-muted py-3">Memuat data koordinator...</td></tr>');
+        $('#tbodyKoordinator').html('<tr><td colspan="7" class="text-center text-muted py-3">Memuat data koordinator...</td></tr>');
         
         $.ajax({
             url: "{{ url('/biro') }}/" + biroId + "/koordinator",
@@ -239,7 +256,7 @@ $(document).ready(function() {
                 $('#modalBiroInfo').text(`${biro.name} ${kodeText} — ${biro.email}`);
 
                 if (!list || list.length === 0) {
-                    $('#tbodyKoordinator').html('<tr><td colspan="4" class="text-center text-muted py-3">Belum ada koordinator untuk biro ini. Tambahkan melalui form di atas.</td></tr>');
+                    $('#tbodyKoordinator').html('<tr><td colspan="7" class="text-center text-muted py-3">Belum ada koordinator untuk biro ini. Tambahkan melalui form di atas.</td></tr>');
                     return;
                 }
 
@@ -250,11 +267,16 @@ $(document).ready(function() {
                             <td>${index + 1}</td>
                             <td><span class="fw-semibold">${escapeHtml(item.nama)}</span></td>
                             <td><a href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a></td>
+                            <td><span class="badge bg-label-info font-monospace">${escapeHtml(item.username || '-')}</span></td>
+                            <td><span class="badge bg-label-secondary font-monospace">${escapeHtml(item.password || '-')}</span></td>
+                            <td>${escapeHtml(item.telepon || '-')}</td>
                             <td>
                                 <button type="button" class="btn btn-xs btn-warning btn-edit-koordinator me-1" 
                                     data-id="${item.id}" 
                                     data-nama="${escapeHtml(item.nama)}" 
-                                    data-email="${escapeHtml(item.email)}">
+                                    data-email="${escapeHtml(item.email)}"
+                                    data-username="${escapeHtml(item.username || '')}"
+                                    data-telepon="${escapeHtml(item.telepon || '')}">
                                     <i class="bx bx-edit-alt"></i> Edit
                                 </button>
                                 <button type="button" class="btn btn-xs btn-danger btn-delete-koordinator" 
@@ -269,7 +291,7 @@ $(document).ready(function() {
                 $('#tbodyKoordinator').html(rows);
             },
             error: function() {
-                $('#tbodyKoordinator').html('<tr><td colspan="4" class="text-center text-danger py-3">Gagal memuat data koordinator.</td></tr>');
+                $('#tbodyKoordinator').html('<tr><td colspan="7" class="text-center text-danger py-3">Gagal memuat data koordinator.</td></tr>');
             }
         });
     }
@@ -278,6 +300,11 @@ $(document).ready(function() {
         $('#koordinator_id').val('');
         $('#koordinator_nama').val('');
         $('#koordinator_email').val('');
+        $('#koordinator_username').val('');
+        $('#koordinator_password').val('');
+        $('#koordinator_telepon').val('');
+        $('#labelKoordinatorPassword').text('(default: bebras123)');
+        $('#koordinator_password').attr('placeholder', 'Default: bebras123');
         $('#formKoordinatorTitle').text('Tambah Koordinator');
         $('#btnSubmitKoordinator').html('<i class="bx bx-plus"></i> Simpan');
         $('#btnCancelEditKoordinator').addClass('d-none');
@@ -302,6 +329,9 @@ $(document).ready(function() {
         const koordinatorId = $('#koordinator_id').val();
         const nama = $('#koordinator_nama').val();
         const email = $('#koordinator_email').val();
+        const username = $('#koordinator_username').val();
+        const password = $('#koordinator_password').val();
+        const telepon = $('#koordinator_telepon').val();
         const btn = $('#btnSubmitKoordinator');
 
         btn.prop('disabled', true);
@@ -312,13 +342,20 @@ $(document).ready(function() {
             : "{{ url('/biro') }}/" + biroId + "/koordinator";
         const method = isEdit ? "PUT" : "POST";
 
+        const postData = {
+            nama: nama,
+            email: email,
+            username: username,
+            telepon: telepon
+        };
+        if (password) {
+            postData.password = password;
+        }
+
         $.ajax({
             url: url,
             type: method,
-            data: {
-                nama: nama,
-                email: email
-            },
+            data: postData,
             success: function(res) {
                 btn.prop('disabled', false);
                 resetKoordinatorForm();
@@ -352,11 +389,18 @@ $(document).ready(function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         const email = $(this).data('email');
+        const username = $(this).data('username') || '';
+        const telepon = $(this).data('telepon') || '';
 
         $('#koordinator_id').val(id);
         $('#koordinator_nama').val(nama);
         $('#koordinator_email').val(email);
+        $('#koordinator_username').val(username);
+        $('#koordinator_password').val('');
+        $('#koordinator_telepon').val(telepon);
 
+        $('#labelKoordinatorPassword').text('(kosongkan jika tidak diubah)');
+        $('#koordinator_password').attr('placeholder', 'Kosongkan jika tidak diubah');
         $('#formKoordinatorTitle').text('Ubah Data Koordinator');
         $('#btnSubmitKoordinator').html('<i class="bx bx-check"></i> Perbarui');
         $('#btnCancelEditKoordinator').removeClass('d-none');

@@ -103,11 +103,16 @@ class BiroManagementTest extends TestCase
         $koorId = $storeResponse->json('data.id');
 
         $this->assertDatabaseHas('koordinator_biro', [
-            'id'      => $koorId,
-            'user_id' => $this->biroUser->id,
-            'nama'    => 'Agung Dewandaru',
-            'email'   => 'agung@itb.ac.id',
+            'id'    => $koorId,
+            'nama'  => 'Agung Dewandaru',
+            'email' => 'agung@itb.ac.id',
         ]);
+
+        $this->biroUser->refresh();
+        $koorModel = KoordinatorBiro::with('user')->find($koorId);
+        $this->assertNotNull($koorModel->user);
+        $this->assertEquals($this->biroUser->kode_biro, $koorModel->user->kode_biro);
+        $this->assertTrue($koorModel->user->hasRole('biro'));
 
         // 2. Read Koordinator
         $getResponse = $this->actingAs($this->admin)->getJson(route('biro.koordinator.get', $this->biroUser->id));

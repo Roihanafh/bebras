@@ -45,6 +45,16 @@ class User extends Authenticatable
         return $this->roles()->where('name', $role)->exists();
     }
 
+    public function assignRole($role): void
+    {
+        if (is_string($role)) {
+            $roleModel = Role::firstOrCreate(['name' => $role]);
+            $this->roles()->syncWithoutDetaching([$roleModel->id]);
+        } elseif ($role instanceof Role) {
+            $this->roles()->syncWithoutDetaching([$role->id]);
+        }
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

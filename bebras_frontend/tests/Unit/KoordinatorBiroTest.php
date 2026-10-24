@@ -18,7 +18,7 @@ class KoordinatorBiroTest extends TestCase
     public function test_koordinator_biro_fillable_attributes(): void
     {
         $koordinator = new KoordinatorBiro();
-        $expectedFillables = ['user_id', 'nama', 'email'];
+        $expectedFillables = ['user_id', 'nama', 'email', 'username', 'password', 'telepon'];
 
         $this->assertEquals($expectedFillables, $koordinator->getFillable());
     }

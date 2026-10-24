@@ -15,6 +15,13 @@ class KoordinatorBiro extends Model
         'user_id',
         'nama',
         'email',
+        'username',
+        'password',
+        'telepon',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     public function user()

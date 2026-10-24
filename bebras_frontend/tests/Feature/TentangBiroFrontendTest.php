@@ -203,4 +203,52 @@ class TentangBiroFrontendTest extends TestCase
         $response->assertSee('001 — Anggota ITB');
         $response->assertSee('001 — Anggota UI');
     }
+
+    public function test_multiple_user_dengan_biro_yang_sama_tidak_ditampilkan_berkali_kali(): void
+    {
+        $biroRole = Role::firstOrCreate(['name' => 'biro']);
+        $uniqueBiroName = 'Politeknik Caltex Riau Unik ' . uniqid();
+        $kodeBiro = '987';
+
+        // Akun 1 untuk biro yang sama
+        $user1 = User::create([
+            'name'      => $uniqueBiroName,
+            'username'  => 'biro_pcr_' . uniqid(),
+            'email'     => 'pcr1_' . uniqid() . '@pcr.ac.id',
+            'password'  => Hash::make('password'),
+            'kode_biro' => $kodeBiro,
+        ]);
+        $user1->roles()->attach($biroRole->id);
+        $user1->koordinatorBiro()->create([
+            'nama'  => 'Koordinator PCR 1',
+            'email' => 'pcr1@pcr.ac.id',
+        ]);
+
+        // Akun 2 untuk biro yang sama
+        $user2 = User::create([
+            'name'      => $uniqueBiroName,
+            'username'  => 'biro_pcr2_' . uniqid(),
+            'email'     => 'pcr2_' . uniqid() . '@pcr.ac.id',
+            'password'  => Hash::make('password'),
+            'kode_biro' => $kodeBiro,
+        ]);
+        $user2->roles()->attach($biroRole->id);
+        $user2->koordinatorBiro()->create([
+            'nama'  => 'Koordinator PCR 2',
+            'email' => 'pcr2@pcr.ac.id',
+        ]);
+
+        $response = $this->get(route('tentangBebras.dd_7'));
+        $response->assertStatus(200);
+
+        // Pastikan nama biro hanya muncul 1 kali di halaman
+        $content = $response->getContent();
+        $occurrences = substr_count($content, $uniqueBiroName);
+        // Terhitung 2 kali jika di judul header accordion "Anggota {biro}", tapi di list biro hanya 1 elemen biro
+        $this->assertEquals(2, $occurrences, 'Biro hanya muncul 1 kali di list item (dan 1 kali di header panel accordion)');
+
+        // Kedua koordinator harus tampil
+        $response->assertSee('Koordinator PCR 1');
+        $response->assertSee('Koordinator PCR 2');
+    }
 }
