@@ -44,13 +44,10 @@ class TentangBebrasController extends Controller
 
                 // Kumpulkan seluruh koordinator dari semua akun di biro yang sama
                 $allKoordinator = $usersInBiro->flatMap(function ($u) {
-                    if ($u->koordinatorBiro && $u->koordinatorBiro->isNotEmpty()) {
-                        return $u->koordinatorBiro;
-                    }
-                    return collect([(object)[
-                        'nama'  => $u->name,
-                        'email' => $u->email,
-                    ]]);
+                    return $u->koordinatorBiro;
+                })->filter(function ($k) use ($primary) {
+                    // Hindari memasukkan nama institusi biro itu sendiri sebagai nama koordinator
+                    return !empty($k->nama) && strtolower(trim($k->nama)) !== strtolower(trim($primary->name));
                 })->unique(function ($k) {
                     return strtolower(trim($k->nama)) . '|' . strtolower(trim($k->email));
                 })->values();
