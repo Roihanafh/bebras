@@ -29,36 +29,38 @@
             left: 0;
             width: 1016pt;
             height: 638pt;
-            z-index: 1;
+            z-index: 0;
         }
         .qr-wrapper {
             position: absolute;
-            top: 66pt;
+            top: 55pt;
             right: 38pt;
-            width: 214pt;
-            height: 214pt;
+            width: 195pt;
+            height: 195pt;
             background: #ffffff;
-            padding: 10pt;
-            border-radius: 4pt;
+            padding: 8pt;
+            border-radius: 6pt;
             text-align: center;
             z-index: 10;
         }
         .qr-wrapper img {
-            width: 100%;
-            height: 100%;
+            width: 179pt;
+            height: 179pt;
             display: block;
+            margin: 0 auto;
         }
         .id-member {
             position: absolute;
-            top: 284pt;
+            top: 280pt;
             right: 38pt;
-            width: 214pt;
+            width: 211pt;
             text-align: center;
             color: #ffffff;
-            font-size: 26pt;
+            font-size: 24pt;
             font-weight: 900;
-            letter-spacing: 1.5pt;
+            letter-spacing: 2pt;
             font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.1;
             z-index: 10;
         }
         .nama-member {
