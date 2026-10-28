@@ -40,7 +40,7 @@
         <!-- Hero Section with Carousel -->
         <section class="relative">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="flex flex-col md:flex-row items-center p-4 md:gap-x-0">
+                <div class="no-print flex flex-col md:flex-row items-center p-4 md:gap-x-0">
                     <div class="flex justify-center md:justify-start mb-6 md:mb-0   ">
                         <img src="{{ asset('img/logo.jpg') }}" alt="Logo Bebras Indonesia"
                             class="w-20 h-20 md:w-30 md:h-30 rounded-md object-cover">
