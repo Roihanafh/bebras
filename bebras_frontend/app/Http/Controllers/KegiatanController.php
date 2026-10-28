@@ -14,7 +14,7 @@ class KegiatanController extends Controller
      */
     public function show(string $slug)
     {
-        $menu = MenuKegiatan::with(['parent', 'kegiatans' => function ($query) {
+        $menu = MenuKegiatan::with(['parent', 'pengumumanHasilFiles', 'kegiatans' => function ($query) {
                 $query->where('status_validasi', 'approved');
             }])
             ->where('slug', $slug)

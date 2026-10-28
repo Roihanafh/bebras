@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuKegiatan;
+use App\Models\PengumumanHasilFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -64,29 +65,62 @@ class MenuKegiatanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'parent_id' => 'nullable|exists:menu_kegiatan,id',
-            'nama_menu' => 'required|string|max:255',
-            'slug'      => 'nullable|string|max:255|unique:menu_kegiatan,slug',
-            'judul'     => 'nullable|string|max:255',
-            'body'      => 'nullable|string',
-            'url'       => 'nullable|url|max:500',
-            'gambar'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'urutan'    => 'required|integer|min:0',
-            'template'  => ['nullable', Rule::in(['bebras_challenge', 'workshop', 'pengumuman_hasil', 'statistik'])],
+            'parent_id'      => 'nullable|exists:menu_kegiatan,id',
+            'nama_menu'      => 'required|string|max:255',
+            'slug'           => 'nullable|string|max:255|unique:menu_kegiatan,slug',
+            'judul'          => 'nullable|string|max:255',
+            'body'           => 'nullable|string',
+            'url'            => 'nullable|url|max:500',
+            'gambar'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'urutan'         => 'required|integer|min:0',
+            'template'       => ['nullable', Rule::in(['bebras_challenge', 'workshop', 'pengumuman_hasil', 'statistik'])],
+            'csv_sikecil'    => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_siaga'      => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_penggalang' => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_penegak'    => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['nama_menu']);
 
+        $effectiveTemplate = $validated['template'] ?? null;
         if (!empty($validated['parent_id'])) {
+            $parentMenu = MenuKegiatan::find($validated['parent_id']);
+            $effectiveTemplate = $parentMenu?->resolveTemplate();
             $validated['template'] = null;
         }
 
         DB::beginTransaction();
         try {
-            if ($request->hasFile('gambar')) {
+            if ($effectiveTemplate === 'pengumuman_hasil') {
+                $validated['gambar'] = null;
+            } elseif ($request->hasFile('gambar')) {
                 $validated['gambar'] = $request->file('gambar')->store('menu_kegiatan', 'public');
             }
-            MenuKegiatan::create($validated);
+
+            $menu = MenuKegiatan::create($validated);
+
+            if ($effectiveTemplate === 'pengumuman_hasil') {
+                $categoryFields = [
+                    'sikecil'    => 'csv_sikecil',
+                    'siaga'      => 'csv_siaga',
+                    'penggalang' => 'csv_penggalang',
+                    'penegak'    => 'csv_penegak',
+                ];
+                foreach ($categoryFields as $cat => $field) {
+                    if ($request->hasFile($field)) {
+                        $file = $request->file($field);
+                        $path = $file->store('pengumuman_hasil', 'public');
+                        PengumumanHasilFile::create([
+                            'menu_kegiatan_id' => $menu->id,
+                            'kategori'         => $cat,
+                            'file_path'        => $path,
+                            'original_name'    => $file->getClientOriginalName(),
+                            'file_size'        => $file->getSize(),
+                        ]);
+                    }
+                }
+            }
+
             DB::commit();
             return redirect()->route('menu_kegiatan.index')->with('success', 'Menu Kegiatan berhasil ditambahkan');
         } catch (\Throwable $e) {
@@ -97,7 +131,7 @@ class MenuKegiatanController extends Controller
 
     public function edit($id)
     {
-        $data        = MenuKegiatan::findOrFail($id);
+        $data        = MenuKegiatan::with('pengumumanHasilFiles')->findOrFail($id);
         $breadcrumbs = $this->breadCrumbs('Edit Menu Kegiatan');
         // Exclude self and own children from parent list
         $menuList    = MenuKegiatan::whereNull('parent_id')
@@ -112,33 +146,83 @@ class MenuKegiatanController extends Controller
         $data = MenuKegiatan::findOrFail($id);
 
         $validated = $request->validate([
-            'parent_id' => 'nullable|exists:menu_kegiatan,id',
-            'nama_menu' => 'required|string|max:255',
-            'slug'      => 'nullable|string|max:255|unique:menu_kegiatan,slug,' . $id,
-            'judul'     => 'nullable|string|max:255',
-            'body'      => 'nullable|string',
-            'url'       => 'nullable|url|max:500',
-            'gambar'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'urutan'    => 'required|integer|min:0',
-            'template'  => ['nullable', Rule::in(['bebras_challenge', 'workshop', 'pengumuman_hasil', 'statistik'])],
+            'parent_id'      => 'nullable|exists:menu_kegiatan,id',
+            'nama_menu'      => 'required|string|max:255',
+            'slug'           => 'nullable|string|max:255|unique:menu_kegiatan,slug,' . $id,
+            'judul'          => 'nullable|string|max:255',
+            'body'           => 'nullable|string',
+            'url'            => 'nullable|url|max:500',
+            'gambar'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'urutan'         => 'required|integer|min:0',
+            'template'       => ['nullable', Rule::in(['bebras_challenge', 'workshop', 'pengumuman_hasil', 'statistik'])],
+            'csv_sikecil'    => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_siaga'      => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_penggalang' => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
+            'csv_penegak'    => 'nullable|file|mimes:csv,txt,xlsx,xls|max:51200',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['nama_menu']);
 
+        $effectiveTemplate = $validated['template'] ?? null;
         if (!empty($validated['parent_id'])) {
+            $parentMenu = MenuKegiatan::find($validated['parent_id']);
+            $effectiveTemplate = $parentMenu?->resolveTemplate();
             $validated['template'] = null;
         }
 
         DB::beginTransaction();
         try {
-            if ($request->hasFile('gambar')) {
+            if ($effectiveTemplate === 'pengumuman_hasil') {
+                // Hapus file gambar jika ada, karena template pengumuman hasil tidak menggunakan gambar
                 if ($data->gambar && Storage::disk('public')->exists($data->gambar)) {
                     Storage::disk('public')->delete($data->gambar);
                 }
-                $validated['gambar'] = $request->file('gambar')->store('menu_kegiatan', 'public');
+                $validated['gambar'] = null;
+
+                $categoryFields = [
+                    'sikecil'    => 'csv_sikecil',
+                    'siaga'      => 'csv_siaga',
+                    'penggalang' => 'csv_penggalang',
+                    'penegak'    => 'csv_penegak',
+                ];
+                foreach ($categoryFields as $cat => $field) {
+                    if ($request->hasFile($field)) {
+                        $file = $request->file($field);
+                        $existing = PengumumanHasilFile::where('menu_kegiatan_id', $data->id)
+                            ->where('kategori', $cat)
+                            ->first();
+
+                        if ($existing) {
+                            if (Storage::disk('public')->exists($existing->file_path)) {
+                                Storage::disk('public')->delete($existing->file_path);
+                            }
+                            $existing->update([
+                                'file_path'     => $file->store('pengumuman_hasil', 'public'),
+                                'original_name' => $file->getClientOriginalName(),
+                                'file_size'     => $file->getSize(),
+                            ]);
+                        } else {
+                            PengumumanHasilFile::create([
+                                'menu_kegiatan_id' => $data->id,
+                                'kategori'         => $cat,
+                                'file_path'        => $file->store('pengumuman_hasil', 'public'),
+                                'original_name'    => $file->getClientOriginalName(),
+                                'file_size'        => $file->getSize(),
+                            ]);
+                        }
+                    }
+                }
             } else {
-                unset($validated['gambar']);
+                if ($request->hasFile('gambar')) {
+                    if ($data->gambar && Storage::disk('public')->exists($data->gambar)) {
+                        Storage::disk('public')->delete($data->gambar);
+                    }
+                    $validated['gambar'] = $request->file('gambar')->store('menu_kegiatan', 'public');
+                } else {
+                    unset($validated['gambar']);
+                }
             }
+
             $data->update($validated);
             DB::commit();
             return redirect()->route('menu_kegiatan.index')->with('success', 'Menu Kegiatan berhasil diperbarui');
@@ -152,9 +236,14 @@ class MenuKegiatanController extends Controller
     {
         DB::beginTransaction();
         try {
-            $data = MenuKegiatan::findOrFail($id);
+            $data = MenuKegiatan::with('pengumumanHasilFiles')->findOrFail($id);
             if ($data->gambar && Storage::disk('public')->exists($data->gambar)) {
                 Storage::disk('public')->delete($data->gambar);
+            }
+            foreach ($data->pengumumanHasilFiles as $f) {
+                if (Storage::disk('public')->exists($f->file_path)) {
+                    Storage::disk('public')->delete($f->file_path);
+                }
             }
             $data->delete();
             DB::commit();

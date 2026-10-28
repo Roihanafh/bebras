@@ -42,6 +42,14 @@
                                         <option value="">-- Tidak Ada (Menu Induk) --</option>
                                         @foreach ($menuList as $menu)
                                             <option value="{{ $menu->id }}"
+                                                data-template="{{ $menu->resolveTemplate() }}"
+                                                data-template-name="{{ match($menu->resolveTemplate()) {
+                                                    'pengumuman_hasil' => 'Pengumuman Hasil',
+                                                    'bebras_challenge' => 'Bebras Challenge',
+                                                    'workshop'         => 'Workshop',
+                                                    'statistik'        => 'Statistik',
+                                                    default            => 'Tanpa Template',
+                                                } }}"
                                                 {{ old('parent_id', $data->parent_id ?? '') == $menu->id ? 'selected' : '' }}>
                                                 {{ $menu->nama_menu }}
                                             </option>
@@ -75,7 +83,7 @@
                                     <label class="form-label">Template</label>
                                     <div class="alert alert-info py-2 mb-0">
                                         <i class="bx bx-info-circle me-1"></i>
-                                        Template diwarisi dari parent.
+                                        Template diwarisi dari parent: <strong id="inherited-template-label">-</strong>
                                     </div>
                                 </div>
 
@@ -135,8 +143,68 @@
                                     <small class="text-muted">Konten ini ditampilkan di atas daftar kartu kegiatan pada halaman frontend.</small>
                                 </div>
 
+                                {{-- ── UPLOAD CSV PENGUMUMAN HASIL (Khusus Template Pengumuman Hasil) ── --}}
+                                <div class="col-md-12" id="field-pengumuman-hasil" style="display:none;">
+                                    <div class="card border border-primary bg-light mb-0">
+                                        <div class="card-header bg-label-primary py-2 d-flex align-items-center gap-2">
+                                            <i class="bx bx-file text-primary fs-5"></i>
+                                            <strong class="text-primary">Upload File CSV / Excel Hasil Tantangan</strong>
+                                        </div>
+                                        <div class="card-body pt-3 pb-2">
+                                            <p class="text-muted small mb-3">
+                                                Silakan unggah file CSV atau Excel untuk masing-masing kategori peserta (Si Kecil, Siaga, Penggalang, Penegak). Format yang didukung: <code>.csv</code>, <code>.xlsx</code>, <code>.xls</code>. File ini akan disimpan di storage dan ditampilkan di frontend.
+                                            </p>
+                                            @php
+                                                $filesMap = isset($data) ? $data->pengumumanHasilFiles->keyBy('kategori') : collect();
+                                                $kategoriConfig = [
+                                                    'sikecil'    => ['label' => 'Si Kecil', 'color' => 'success', 'desc' => 'Tingkat SD Kelas 1-3'],
+                                                    'siaga'      => ['label' => 'Siaga', 'color' => 'info', 'desc' => 'Tingkat SD Kelas 4-6'],
+                                                    'penggalang' => ['label' => 'Penggalang', 'color' => 'warning', 'desc' => 'Tingkat SMP'],
+                                                    'penegak'    => ['label' => 'Penegak', 'color' => 'danger', 'desc' => 'Tingkat SMA / SMK'],
+                                                ];
+                                            @endphp
+                                            <div class="row g-3">
+                                                @foreach($kategoriConfig as $key => $cfg)
+                                                    @php $currentFile = $filesMap->get($key); @endphp
+                                                    <div class="col-md-6">
+                                                        <div class="p-3 bg-white rounded border">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <label class="form-label fw-bold mb-0 text-{{ $cfg['color'] }}">
+                                                                    <i class="bx bx-spreadsheet me-1"></i> {{ $cfg['label'] }}
+                                                                </label>
+                                                                <small class="text-muted">{{ $cfg['desc'] }}</small>
+                                                            </div>
+                                                            <input type="file" name="csv_{{ $key }}" id="csv_{{ $key }}"
+                                                                   class="form-control form-control-sm @error('csv_'.$key) is-invalid @enderror"
+                                                                   accept=".csv, .xlsx, .xls">
+                                                            @error('csv_'.$key)
+                                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                            @enderror
+                                                            @if($currentFile)
+                                                                <div class="mt-2 p-2 bg-light rounded d-flex align-items-center justify-content-between">
+                                                                    <div class="text-truncate me-2 small">
+                                                                        <i class="bx bxs-file-doc text-success me-1"></i>
+                                                                        <span class="fw-semibold text-dark">{{ $currentFile->original_name ?? basename($currentFile->file_path) }}</span>
+                                                                        @if($currentFile->file_size)
+                                                                            <span class="badge bg-secondary ms-1">{{ number_format($currentFile->file_size / 1024, 1) }} KB</span>
+                                                                        @endif
+                                                                    </div>
+                                                                    <a href="{{ asset('storage/' . $currentFile->file_path) }}" target="_blank" download class="btn btn-xs btn-outline-primary flex-shrink-0">
+                                                                        <i class="bx bx-download"></i> Unduh
+                                                                    </a>
+                                                                </div>
+                                                                <small class="text-muted d-block mt-1 fst-italic">Kosongkan jika tidak ingin mengganti file ini.</small>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {{-- Gambar --}}
-                                <div class="col-md-12">
+                                <div class="col-md-12" id="field-gambar">
                                     <label class="form-label">Gambar (opsional)</label>
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="flex-grow-1">
@@ -277,23 +345,86 @@
                 .replace(/-+$/, '');
         }
 
-        // ── Toggle field Template berdasarkan parent_id ──
-        function toggleTemplateField() {
-            const parentId       = document.getElementById('parent_id').value;
-            const templateField  = document.getElementById('template-field');
-            const inheritedMsg   = document.getElementById('template-inherited-msg');
+        function getEffectiveTemplateInfo() {
+            const parentSelect = document.getElementById('parent_id');
+            const parentId     = parentSelect ? parentSelect.value : '';
+            if (parentId) {
+                const selectedOption = parentSelect.querySelector(`option[value="${parentId}"]`);
+                return {
+                    template: selectedOption ? (selectedOption.dataset.template || '') : '',
+                    label: selectedOption ? (selectedOption.dataset.templateName || 'Tanpa Template') : 'Tanpa Template',
+                    isInherited: true
+                };
+            }
+            const templateSelect = document.getElementById('template');
+            const tplVal = templateSelect ? templateSelect.value : '';
+            const tplLabels = {
+                'pengumuman_hasil': 'Pengumuman Hasil',
+                'bebras_challenge': 'Bebras Challenge',
+                'workshop': 'Workshop',
+                'statistik': 'Statistik',
+            };
+            return {
+                template: tplVal,
+                label: tplLabels[tplVal] || 'Tanpa Template',
+                isInherited: false
+            };
+        }
 
+        // ── Toggle field Template, CSV Hasil, & Gambar berdasarkan template yang aktif ──
+        function updateFormState() {
+            const parentId             = document.getElementById('parent_id').value;
+            const templateField        = document.getElementById('template-field');
+            const inheritedMsg         = document.getElementById('template-inherited-msg');
+            const inheritedLabel       = document.getElementById('inherited-template-label');
+            const fieldGambar          = document.getElementById('field-gambar');
+            const fieldPengumuman      = document.getElementById('field-pengumuman-hasil');
+            const gambarInput          = document.getElementById('gambar');
+
+            const info = getEffectiveTemplateInfo();
+
+            // 1. Tampilkan / sembunyikan dropdown template tergantung parent
             if (parentId) {
                 templateField.style.display  = 'none';
-                if (inheritedMsg) inheritedMsg.style.display = 'block';
+                if (inheritedMsg) {
+                    inheritedMsg.style.display = 'block';
+                    if (inheritedLabel) inheritedLabel.textContent = info.label;
+                }
             } else {
                 templateField.style.display  = 'block';
                 if (inheritedMsg) inheritedMsg.style.display = 'none';
             }
+
+            // 2. Cek template efektif (apakah pengumuman_hasil)
+            if (info.template === 'pengumuman_hasil') {
+                if (fieldPengumuman) {
+                    fieldPengumuman.style.display = 'block';
+                    fieldPengumuman.querySelectorAll('input').forEach(el => el.disabled = false);
+                }
+                if (fieldGambar) {
+                    fieldGambar.style.display = 'none';
+                    if (gambarInput) {
+                        gambarInput.disabled = true;
+                        gambarInput.value = '';
+                    }
+                }
+            } else {
+                if (fieldPengumuman) {
+                    fieldPengumuman.style.display = 'none';
+                    fieldPengumuman.querySelectorAll('input').forEach(el => el.disabled = true);
+                }
+                if (fieldGambar) {
+                    fieldGambar.style.display = 'block';
+                    if (gambarInput) {
+                        gambarInput.disabled = false;
+                    }
+                }
+            }
         }
 
-        document.getElementById('parent_id').addEventListener('change', toggleTemplateField);
-        toggleTemplateField(); // terapkan state awal saat halaman dimuat
+        document.getElementById('parent_id').addEventListener('change', updateFormState);
+        document.getElementById('template').addEventListener('change', updateFormState);
+        updateFormState(); // terapkan state awal saat halaman dimuat
     });
 </script>
 @endpush

@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\MenuKegiatan;
+use App\Models\PengumumanHasilFile;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -192,6 +195,184 @@ class MenuKegiatanControllerTest extends TestCase
         $this->assertDatabaseHas('menu_kegiatan', [
             'id'       => $child->id,
             'template' => null,
+        ]);
+    }
+
+    /**
+     * store() dengan template pengumuman_hasil mengunggah CSV untuk 4 kategori dan mengabaikan gambar.
+     */
+    public function test_store_pengumuman_hasil_mengunggah_csv_dan_mengabaikan_gambar(): void
+    {
+        Storage::fake('public');
+        $admin = $this->buatAdmin();
+        $slug  = 'pengumuman-test-' . uniqid();
+
+        $fileSikecil    = UploadedFile::fake()->create('Hasil-SiKecil.csv', 100, 'text/csv');
+        $fileSiaga      = UploadedFile::fake()->create('Hasil-Siaga.xlsx', 200, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $filePenggalang = UploadedFile::fake()->create('Hasil-Penggalang.csv', 150, 'text/csv');
+        $filePenegak    = UploadedFile::fake()->create('Hasil-Penegak.csv', 120, 'text/csv');
+        $gambarDummy    = UploadedFile::fake()->image('banner.jpg');
+
+        $response = $this->actingAs($admin)->post(route('menu_kegiatan.store'), [
+            'nama_menu'      => 'Pengumuman 2026',
+            'slug'           => $slug,
+            'urutan'         => 1,
+            'template'       => 'pengumuman_hasil',
+            'gambar'         => $gambarDummy, // seharusnya diabaikan/diset null
+            'csv_sikecil'    => $fileSikecil,
+            'csv_siaga'      => $fileSiaga,
+            'csv_penggalang' => $filePenggalang,
+            'csv_penegak'    => $filePenegak,
+        ]);
+
+        $response->assertRedirect(route('menu_kegiatan.index'));
+
+        $menu = MenuKegiatan::where('slug', $slug)->firstOrFail();
+        $this->assertNull($menu->gambar);
+
+        $this->assertDatabaseHas('pengumuman_hasil_files', [
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'sikecil',
+            'original_name'    => 'Hasil-SiKecil.csv',
+        ]);
+        $this->assertDatabaseHas('pengumuman_hasil_files', [
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'siaga',
+            'original_name'    => 'Hasil-Siaga.xlsx',
+        ]);
+        $this->assertDatabaseHas('pengumuman_hasil_files', [
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'penggalang',
+            'original_name'    => 'Hasil-Penggalang.csv',
+        ]);
+        $this->assertDatabaseHas('pengumuman_hasil_files', [
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'penegak',
+            'original_name'    => 'Hasil-Penegak.csv',
+        ]);
+
+        $files = PengumumanHasilFile::where('menu_kegiatan_id', $menu->id)->get();
+        $this->assertCount(4, $files);
+        foreach ($files as $f) {
+            Storage::disk('public')->assertExists($f->file_path);
+        }
+    }
+
+    /**
+     * update() dengan template pengumuman_hasil memperbarui file CSV dan menghapus file lama.
+     */
+    public function test_update_pengumuman_hasil_memperbarui_file_csv(): void
+    {
+        Storage::fake('public');
+        $admin = $this->buatAdmin();
+
+        $menu = MenuKegiatan::create([
+            'nama_menu' => 'Pengumuman Edit Test',
+            'slug'      => 'pengumuman-edit-' . uniqid(),
+            'urutan'    => 1,
+            'template'  => 'pengumuman_hasil',
+        ]);
+
+        $oldPath = UploadedFile::fake()->create('Old-SiKecil.csv', 50, 'text/csv')->store('pengumuman_hasil', 'public');
+        PengumumanHasilFile::create([
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'sikecil',
+            'file_path'        => $oldPath,
+            'original_name'    => 'Old-SiKecil.csv',
+            'file_size'        => 50000,
+        ]);
+
+        Storage::disk('public')->assertExists($oldPath);
+
+        $newFile = UploadedFile::fake()->create('New-SiKecil.csv', 80, 'text/csv');
+
+        $this->actingAs($admin)->put(route('menu_kegiatan.update', $menu->id), [
+            'nama_menu'   => $menu->nama_menu,
+            'slug'        => $menu->slug,
+            'urutan'      => $menu->urutan,
+            'template'    => 'pengumuman_hasil',
+            'csv_sikecil' => $newFile,
+        ]);
+
+        Storage::disk('public')->assertMissing($oldPath);
+
+        $updatedRecord = PengumumanHasilFile::where('menu_kegiatan_id', $menu->id)
+            ->where('kategori', 'sikecil')
+            ->firstOrFail();
+
+        $this->assertSame('New-SiKecil.csv', $updatedRecord->original_name);
+        Storage::disk('public')->assertExists($updatedRecord->file_path);
+    }
+
+    /**
+     * destroy() menu_kegiatan menghapus semua file CSV terkait di storage.
+     */
+    public function test_destroy_pengumuman_hasil_menghapus_file_di_storage(): void
+    {
+        Storage::fake('public');
+        $admin = $this->buatAdmin();
+
+        $menu = MenuKegiatan::create([
+            'nama_menu' => 'Pengumuman Hapus Test',
+            'slug'      => 'pengumuman-hapus-' . uniqid(),
+            'urutan'    => 1,
+            'template'  => 'pengumuman_hasil',
+        ]);
+
+        $path = UploadedFile::fake()->create('Siaga.xlsx', 100)->store('pengumuman_hasil', 'public');
+        PengumumanHasilFile::create([
+            'menu_kegiatan_id' => $menu->id,
+            'kategori'         => 'siaga',
+            'file_path'        => $path,
+            'original_name'    => 'Siaga.xlsx',
+            'file_size'        => 100000,
+        ]);
+
+        Storage::disk('public')->assertExists($path);
+
+        $this->actingAs($admin)->delete(route('menu_kegiatan.destroy', $menu->id));
+
+        $this->assertDatabaseMissing('menu_kegiatan', ['id' => $menu->id]);
+        $this->assertDatabaseMissing('pengumuman_hasil_files', ['menu_kegiatan_id' => $menu->id]);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    /**
+     * store() untuk menu child yang parent-nya memiliki template pengumuman_hasil
+     * harus mengunggah file CSV dan mengabaikan gambar.
+     */
+    public function test_store_menu_child_mengadopsi_template_pengumuman_hasil_dari_parent(): void
+    {
+        Storage::fake('public');
+        $admin  = $this->buatAdmin();
+        $parent = MenuKegiatan::create([
+            'nama_menu' => 'Pengumuman Hasil Induk',
+            'slug'      => 'pengumuman-hasil-induk-' . uniqid(),
+            'urutan'    => 1,
+            'template'  => 'pengumuman_hasil',
+        ]);
+
+        $slugChild = 'pengumuman-child-' . uniqid();
+        $fileSikecil = UploadedFile::fake()->create('Hasil-Child-SiKecil.csv', 100, 'text/csv');
+
+        $response = $this->actingAs($admin)->post(route('menu_kegiatan.store'), [
+            'parent_id'   => $parent->id,
+            'nama_menu'   => '2026',
+            'slug'        => $slugChild,
+            'urutan'      => 1,
+            'csv_sikecil' => $fileSikecil,
+        ]);
+
+        $response->assertRedirect(route('menu_kegiatan.index'));
+
+        $child = MenuKegiatan::where('slug', $slugChild)->firstOrFail();
+        $this->assertNull($child->template); // template child tetap null di DB
+        $this->assertSame('pengumuman_hasil', $child->resolveTemplate()); // resolved dari parent
+
+        $this->assertDatabaseHas('pengumuman_hasil_files', [
+            'menu_kegiatan_id' => $child->id,
+            'kategori'         => 'sikecil',
+            'original_name'    => 'Hasil-Child-SiKecil.csv',
         ]);
     }
 }

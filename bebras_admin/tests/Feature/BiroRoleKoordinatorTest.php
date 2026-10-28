@@ -92,16 +92,42 @@ class BiroRoleKoordinatorTest extends TestCase
     public function test_user_biro_dapat_menambah_koordinator_dan_otomatis_terhubung_ke_dirinya(): void
     {
         $response = $this->actingAs($this->biro1)->postJson(route('biro_koordinator.store'), [
-            'nama'  => 'Koordinator Baru ITB',
-            'email' => 'baru@itb.ac.id',
+            'nama'     => 'Koordinator Baru ITB',
+            'email'    => 'baru@itb.ac.id',
+            'username' => 'koor_baru_itb',
+            'password' => 'pass123',
+            'telepon'  => '0812345678',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('koordinator_biro', [
-            'user_id' => $this->biro1->id,
-            'nama'    => 'Koordinator Baru ITB',
-            'email'   => 'baru@itb.ac.id',
+
+        // Akun user baru untuk koordinator dibuat dengan role biro & kode_biro yang sama
+        $this->assertDatabaseHas('users', [
+            'email'     => 'baru@itb.ac.id',
+            'username'  => 'koor_baru_itb',
+            'kode_biro' => $this->biro1->kode_biro,
         ]);
+
+        $newUser = User::where('email', 'baru@itb.ac.id')->first();
+        $this->assertNotNull($newUser);
+        $this->assertTrue($newUser->hasRole('biro'));
+
+        // Koordinator biro terikat ke user baru tersebut
+        $this->assertDatabaseHas('koordinator_biro', [
+            'user_id'  => $newUser->id,
+            'nama'     => 'Koordinator Baru ITB',
+            'email'    => 'baru@itb.ac.id',
+            'username' => 'koor_baru_itb',
+            'password' => 'pass123',
+            'telepon'  => '0812345678',
+        ]);
+
+        // Koordinator baru langsung terlihat di daftar koordinator biro tersebut
+        $listRes = $this->actingAs($this->biro1)->getJson(route('biro_koordinator.list'), [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+        $listRes->assertStatus(200);
+        $this->assertContains('Koordinator Baru ITB', array_column($listRes->json('data'), 'nama'));
     }
 
     public function test_user_biro_dapat_mengubah_koordinator_miliknya(): void
@@ -171,5 +197,51 @@ class BiroRoleKoordinatorTest extends TestCase
         $this->assertDatabaseHas('koordinator_biro', [
             'id' => $koorBiro2->id,
         ]);
+    }
+
+    public function test_koordinator_biro_bisa_melihat_siapa_saja_koordinator_dari_bironya(): void
+    {
+        $biroRole = Role::firstOrCreate(['name' => 'biro']);
+        $kodeBiro = '654';
+
+        // Akun A dari biro yang sama
+        $biroA = User::create([
+            'name'      => 'Universitas Mitra Uji',
+            'username'  => 'biro_mitra_a_' . uniqid(),
+            'email'     => 'mitra_a_' . uniqid() . '@example.com',
+            'password'  => Hash::make('password'),
+            'kode_biro' => $kodeBiro,
+        ]);
+        $biroA->roles()->attach($biroRole->id);
+        $koorA = $biroA->koordinatorBiro()->create([
+            'nama'  => 'Koordinator Rekan A',
+            'email' => 'rekan_a@example.com',
+        ]);
+
+        // Akun B dari biro yang sama
+        $biroB = User::create([
+            'name'      => 'Universitas Mitra Uji',
+            'username'  => 'biro_mitra_b_' . uniqid(),
+            'email'     => 'mitra_b_' . uniqid() . '@example.com',
+            'password'  => Hash::make('password'),
+            'kode_biro' => $kodeBiro,
+        ]);
+        $biroB->roles()->attach($biroRole->id);
+        $koorB = $biroB->koordinatorBiro()->create([
+            'nama'  => 'Koordinator Rekan B',
+            'email' => 'rekan_b@example.com',
+        ]);
+
+        // Login sebagai biroA, harus bisa melihat koordinator miliknya dan koordinator rekan B dari biro yang sama
+        $response = $this->actingAs($biroA)->getJson(route('biro_koordinator.list'), [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+        $response->assertStatus(200);
+
+        $json = $response->json();
+        $names = array_column($json['data'], 'nama');
+
+        $this->assertContains('Koordinator Rekan A', $names);
+        $this->assertContains('Koordinator Rekan B', $names);
     }
 }

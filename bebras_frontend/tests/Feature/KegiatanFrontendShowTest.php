@@ -192,6 +192,43 @@ class KegiatanFrontendShowTest extends TestCase
         $response->assertViewIs('pages.kegiatan.pengumuman_hasil');
     }
 
+    /**
+     * GET /kegiatan/{slug} pada menu dengan pengumuman_hasil_files dari database
+     * harus me-render nama kategori dan link unduh file.
+     */
+    public function test_template_pengumuman_hasil_dengan_file_database_merender_tabs_dan_link_unduh(): void
+    {
+        $slug = 'pengumuman-db-' . uniqid();
+
+        $menuId = $this->buatMenu([
+            'slug'     => $slug,
+            'template' => 'pengumuman_hasil',
+        ]);
+
+        \App\Models\PengumumanHasilFile::create([
+            'menu_kegiatan_id' => $menuId,
+            'kategori'         => 'sikecil',
+            'file_path'        => 'pengumuman_hasil/test-sikecil.csv',
+            'original_name'    => 'Hasil-Sikecil-2026.csv',
+        ]);
+
+        \App\Models\PengumumanHasilFile::create([
+            'menu_kegiatan_id' => $menuId,
+            'kategori'         => 'penegak',
+            'file_path'        => 'pengumuman_hasil/test-penegak.xlsx',
+            'original_name'    => 'Hasil-Penegak-2026.xlsx',
+        ]);
+
+        $response = $this->get("/kegiatan/{$slug}");
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pages.kegiatan.pengumuman_hasil');
+        $response->assertSee('Si Kecil');
+        $response->assertSee('Penegak');
+        $response->assertSee('Hasil-Sikecil-2026.csv');
+        $response->assertSee('Hasil-Penegak-2026.xlsx');
+    }
+
     // =========================================================================
     // Requirements 6.6 — Template null → view pages.kegiatan.show (generik)
     // =========================================================================

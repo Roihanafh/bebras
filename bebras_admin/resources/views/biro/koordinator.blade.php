@@ -64,6 +64,8 @@
                                 <th class="text-white" style="width: 50px; color: #fff !important;">#</th>
                                 <th class="text-white" style="color: #fff !important;">Nama Koordinator</th>
                                 <th class="text-white" style="color: #fff !important;">Email Koordinator</th>
+                                <th class="text-white" style="color: #fff !important;">Username</th>
+                                <th class="text-white" style="color: #fff !important;">Telepon</th>
                                 <th class="text-white" style="width: 160px; color: #fff !important;">Aksi</th>
                             </tr>
                         </thead>
@@ -94,7 +96,19 @@
                     <div class="mb-3">
                         <label class="form-label" for="koordinator_email">Email Koordinator <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" id="koordinator_email" name="email" placeholder="Contoh: budi@example.com" required>
-                        <div class="form-text">Email ini akan digunakan sebagai tautan kontak (mailto) pada halaman publik.</div>
+                        <div class="form-text">Email ini akan digunakan sebagai akun login dan kontak publik.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="koordinator_username">Username <span class="text-muted small">(opsional)</span></label>
+                        <input type="text" class="form-control font-monospace" id="koordinator_username" name="username" placeholder="Otomatis jika kosong">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="koordinator_password">Password <span class="text-muted small" id="labelPasswordHelp">(default: bebras123)</span></label>
+                        <input type="text" class="form-control font-monospace" id="koordinator_password" name="password" placeholder="Default: bebras123">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="koordinator_telepon">Nomor Telepon / WhatsApp <span class="text-muted small">(opsional)</span></label>
+                        <input type="text" class="form-control" id="koordinator_telepon" name="telepon" placeholder="Contoh: 08123456789">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -126,6 +140,8 @@ $(document).ready(function() {
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'nama', name: 'nama' },
             { data: 'email_display', name: 'email' },
+            { data: 'username_display', name: 'username' },
+            { data: 'telepon_display', name: 'telepon' },
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
         ],
         drawCallback: function(settings) {
@@ -142,6 +158,11 @@ $(document).ready(function() {
         $('#koordinator_id').val('');
         $('#koordinator_nama').val('');
         $('#koordinator_email').val('');
+        $('#koordinator_username').val('');
+        $('#koordinator_password').val('');
+        $('#koordinator_telepon').val('');
+        $('#labelPasswordHelp').text('(default: bebras123)');
+        $('#koordinator_password').attr('placeholder', 'Default: bebras123');
         $('#btnSubmitForm').html('<i class="bx bx-check me-1"></i> Simpan');
         $('#modalFormKoordinator').modal('show');
     });
@@ -151,11 +172,19 @@ $(document).ready(function() {
         const id = $(this).data('id');
         const nama = $(this).data('nama');
         const email = $(this).data('email');
+        const username = $(this).data('username') || '';
+        const telepon = $(this).data('telepon') || '';
 
         $('#modalFormKoordinatorLabel').text('Ubah Data Koordinator');
         $('#koordinator_id').val(id);
         $('#koordinator_nama').val(nama);
         $('#koordinator_email').val(email);
+        $('#koordinator_username').val(username);
+        $('#koordinator_password').val('');
+        $('#koordinator_telepon').val(telepon);
+
+        $('#labelPasswordHelp').text('(kosongkan jika tidak diubah)');
+        $('#koordinator_password').attr('placeholder', 'Kosongkan jika tidak diubah');
         $('#btnSubmitForm').html('<i class="bx bx-check me-1"></i> Perbarui');
         $('#modalFormKoordinator').modal('show');
     });
@@ -166,6 +195,9 @@ $(document).ready(function() {
         const id = $('#koordinator_id').val();
         const nama = $('#koordinator_nama').val();
         const email = $('#koordinator_email').val();
+        const username = $('#koordinator_username').val();
+        const password = $('#koordinator_password').val();
+        const telepon = $('#koordinator_telepon').val();
         const btn = $('#btnSubmitForm');
 
         btn.prop('disabled', true);
@@ -176,13 +208,20 @@ $(document).ready(function() {
             : "{{ route('biro_koordinator.store') }}";
         const method = isEdit ? "PUT" : "POST";
 
+        const postData = {
+            nama: nama,
+            email: email,
+            username: username,
+            telepon: telepon
+        };
+        if (password) {
+            postData.password = password;
+        }
+
         $.ajax({
             url: url,
             type: method,
-            data: {
-                nama: nama,
-                email: email
-            },
+            data: postData,
             success: function(res) {
                 btn.prop('disabled', false);
                 $('#modalFormKoordinator').modal('hide');

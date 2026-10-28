@@ -26,10 +26,20 @@ class MenuKegiatan extends Model
 
     public function resolveTemplate(): ?string
     {
-        if (is_null($this->parent_id)) {
-            return $this->template;
+        $tpl = is_null($this->parent_id) ? $this->template : $this->parent?->resolveTemplate();
+        if ($tpl) {
+            return $tpl;
         }
-        return $this->parent?->template;
+
+        // Fallback berdasarkan slug root menu jika kolom template di DB belum terisi
+        $rootSlug = is_null($this->parent_id) ? $this->slug : $this->parent?->slug;
+        return match ($rootSlug) {
+            'pengumuman-hasil', 'ct-challenge-2023-for-teachers' => 'pengumuman_hasil',
+            'bebras-challenge'                                  => 'bebras_challenge',
+            'workshop'                                          => 'workshop',
+            'statistik-bebras-indonesia-challenge'              => 'statistik',
+            default                                             => null,
+        };
     }
 
     public function parent(): BelongsTo
@@ -45,5 +55,10 @@ class MenuKegiatan extends Model
     public function kegiatans(): HasMany
     {
         return $this->hasMany(Kegiatan::class, 'menu_kegiatan_id')->orderBy('urutan');
+    }
+
+    public function pengumumanHasilFiles(): HasMany
+    {
+        return $this->hasMany(PengumumanHasilFile::class, 'menu_kegiatan_id');
     }
 }

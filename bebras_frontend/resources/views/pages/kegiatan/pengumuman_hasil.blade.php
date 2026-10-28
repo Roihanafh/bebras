@@ -29,30 +29,60 @@
         @php
             $slug = $menu->slug;
             $excelGroups = [];
-            $yearMap = [
-                'pengumuman-2025' => '2025',
-                'pengumuman-2024' => '2024',
-                'pengumuman-2023' => '2023',
-                'pengumuman-2022' => '2022',
+            $categoryLabels = [
+                'sikecil'    => 'Si Kecil',
+                'siaga'      => 'Siaga',
+                'penggalang' => 'Penggalang',
+                'penegak'    => 'Penegak',
             ];
-            if (isset($yearMap[$slug])) {
-                $yr = $yearMap[$slug];
-                $candidates = [
-                    'Si Kecil'   => "Hasil-BC{$yr}-SiKecil.xlsx",
-                    'Siaga'      => "Hasil-BC{$yr}-Siaga.xlsx",
-                    'Penggalang' => "Hasil-BC{$yr}-Penggalang.xlsx",
-                    'Penegak'    => "Hasil-BC{$yr}-Penegak.xlsx",
-                ];
-                foreach ($candidates as $label => $fname) {
-                    if (file_exists(public_path($fname))) {
-                        $excelGroups[$label] = $fname;
+
+            // 1. Ambil file CSV / Excel yang diunggah dari admin melalui database
+            if ($menu->pengumumanHasilFiles && $menu->pengumumanHasilFiles->isNotEmpty()) {
+                $filesByCat = $menu->pengumumanHasilFiles->keyBy('kategori');
+                foreach ($categoryLabels as $key => $label) {
+                    if (isset($filesByCat[$key])) {
+                        $f = $filesByCat[$key];
+                        $excelGroups[$label] = [
+                            'url'      => asset('storage/' . $f->file_path),
+                            'filename' => $f->original_name ?? basename($f->file_path),
+                        ];
                     }
                 }
             }
-            if ($slug === 'ct-challenge-pengumuman') {
-                $fname = 'BebrasChallengeforTeacher2023.xlsx';
-                if (file_exists(public_path($fname))) {
-                    $excelGroups['Pengumuman Hasil'] = $fname;
+
+            // 2. Fallback: file statis dari folder public jika belum ada file di DB (backward compatibility)
+            if (empty($excelGroups)) {
+                $yearMap = [
+                    'pengumuman-2025' => '2025',
+                    'pengumuman-2024' => '2024',
+                    'pengumuman-2023' => '2023',
+                    'pengumuman-2022' => '2022',
+                ];
+                if (isset($yearMap[$slug])) {
+                    $yr = $yearMap[$slug];
+                    $candidates = [
+                        'Si Kecil'   => "Hasil-BC{$yr}-SiKecil.xlsx",
+                        'Siaga'      => "Hasil-BC{$yr}-Siaga.xlsx",
+                        'Penggalang' => "Hasil-BC{$yr}-Penggalang.xlsx",
+                        'Penegak'    => "Hasil-BC{$yr}-Penegak.xlsx",
+                    ];
+                    foreach ($candidates as $label => $fname) {
+                        if (file_exists(public_path($fname))) {
+                            $excelGroups[$label] = [
+                                'url'      => asset($fname),
+                                'filename' => $fname,
+                            ];
+                        }
+                    }
+                }
+                if ($slug === 'ct-challenge-pengumuman') {
+                    $fname = 'BebrasChallengeforTeacher2023.xlsx';
+                    if (file_exists(public_path($fname))) {
+                        $excelGroups['Pengumuman Hasil'] = [
+                            'url'      => asset($fname),
+                            'filename' => $fname,
+                        ];
+                    }
                 }
             }
             $hasExcel = !empty($excelGroups);
@@ -82,8 +112,12 @@
                 </div>
                 @endif
 
-                @foreach($excelGroups as $label => $filename)
-                    @php $i = array_search($label, $groupKeys); @endphp
+                @foreach($excelGroups as $label => $fileData)
+                    @php
+                        $i = array_search($label, $groupKeys);
+                        $fileUrl  = is_array($fileData) ? $fileData['url'] : asset($fileData);
+                        $fileName = is_array($fileData) ? $fileData['filename'] : $fileData;
+                    @endphp
                     <div id="excel-panel-{{ $i }}"
                          class="excel-panel bg-white rounded-2xl shadow-lg border border-cyan-100 overflow-hidden {{ $i !== 0 ? 'hidden' : '' }}">
 
@@ -99,20 +133,20 @@
                                         class="text-xs pl-7 pr-3 py-1.5 rounded-lg border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 w-44">
                                     <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-white/60 text-xs"></i>
                                 </div>
-                                <a href="{{ asset($filename) }}" download
+                                <a href="{{ $fileUrl }}" download="{{ $fileName }}"
                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-semibold rounded-lg transition-colors">
-                                    <i class="fa-solid fa-download"></i> Unduh Excel
+                                    <i class="fa-solid fa-download"></i> Unduh File
                                 </a>
                             </div>
                         </div>
 
                         <div id="loading-{{ $i }}" class="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
                             <div class="w-8 h-8 border-4 border-[#00CAFF] border-t-transparent rounded-full animate-spin"></div>
-                            <span class="text-sm font-medium">Memuat data Excel&#8230;</span>
+                            <span class="text-sm font-medium">Memuat data&#8230;</span>
                         </div>
 
                         <div id="table-wrap-{{ $i }}" class="hidden overflow-x-auto" style="max-height:600px;overflow-y:auto;">
-                            <table id="excel-table-{{ $i }}" class="w-full border-collapse text-xs" data-src="{{ asset($filename) }}">
+                            <table id="excel-table-{{ $i }}" class="w-full border-collapse text-xs" data-src="{{ $fileUrl }}">
                             </table>
                         </div>
 
@@ -212,24 +246,101 @@
     }
 
     function renderSheet(tableEl, ws, infoEl){
+        if(!ws || !ws['!ref']) {
+            tableEl.innerHTML = '<tbody><tr><td class="text-center py-6 text-slate-400">File kosong atau data tidak terbaca.</td></tr></tbody>';
+            if(infoEl) infoEl.textContent = '0 baris data';
+            return;
+        }
         var range = XLSX.utils.decode_range(ws['!ref']||'A1');
+
+        // 1. Cari batas kolom terakhir (maxCol) yang memiliki teks header atau data
+        var maxCol = -1;
+        for(var C = range.s.c; C <= range.e.c; C++){
+            var addr = XLSX.utils.encode_cell({r: range.s.r, c: C});
+            var cell = ws[addr];
+            var val = cell ? XLSX.utils.format_cell(cell).trim() : '';
+            if(val){
+                maxCol = C;
+            }
+        }
+
+        // Jika tidak ada header di baris pertama, cari batas kolom dari baris-baris data awal
+        if(maxCol === -1){
+            for(var R = range.s.r; R <= Math.min(range.e.r, range.s.r + 20); R++){
+                for(var C = range.s.c; C <= range.e.c; C++){
+                    var addr = XLSX.utils.encode_cell({r: R, c: C});
+                    var cell = ws[addr];
+                    var val = cell ? XLSX.utils.format_cell(cell).trim() : '';
+                    if(val && C > maxCol){
+                        maxCol = C;
+                    }
+                }
+            }
+        }
+
+        if(maxCol === -1){
+            tableEl.innerHTML = '<tbody><tr><td class="text-center py-6 text-slate-400">File tidak memiliki data.</td></tr></tbody>';
+            if(infoEl) infoEl.textContent = '0 baris data';
+            return;
+        }
+
+        // 2. Kumpulkan kolom-kolom valid yang tidak kosong
+        var validCols = [];
+        for(var C = range.s.c; C <= maxCol; C++){
+            var headerAddr = XLSX.utils.encode_cell({r: range.s.r, c: C});
+            var headerCell = ws[headerAddr];
+            var headerVal = headerCell ? XLSX.utils.format_cell(headerCell).trim() : '';
+
+            if(headerVal){
+                validCols.push({ col: C, header: headerVal });
+            } else {
+                // Jika header kosong, cek apakah ada data di baris bawahnya
+                var hasColData = false;
+                for(var R = range.s.r + 1; R <= Math.min(range.e.r, range.s.r + 50); R++){
+                    var addr = XLSX.utils.encode_cell({r: R, c: C});
+                    var cell = ws[addr];
+                    if(cell && XLSX.utils.format_cell(cell).trim()){
+                        hasColData = true;
+                        break;
+                    }
+                }
+                if(hasColData){
+                    validCols.push({ col: C, header: '' });
+                }
+            }
+        }
+
+        if(validCols.length === 0){
+            tableEl.innerHTML = '<tbody><tr><td class="text-center py-6 text-slate-400">File tidak memiliki data.</td></tr></tbody>';
+            if(infoEl) infoEl.textContent = '0 baris data';
+            return;
+        }
+
+        // 3. Render Header (thead)
         var html = '<thead><tr><th>#</th>';
-        for(var C=range.s.c; C<=range.e.c; C++){
-            var addr = XLSX.utils.encode_cell({r:range.s.r, c:C});
-            var cell = ws[addr]; var val = cell ? XLSX.utils.format_cell(cell) : '';
-            html += '<th>' + esc(val) + '</th>';
+        for(var i = 0; i < validCols.length; i++){
+            html += '<th>' + esc(validCols[i].header) + '</th>';
         }
         html += '</tr></thead><tbody>';
+
+        // 4. Render Baris (tbody)
         var cnt = 0;
-        for(var R=range.s.r+1; R<=range.e.r; R++){
-            var row = '<td>' + (R) + '</td>'; var has = false;
-            for(var C=range.s.c; C<=range.e.c; C++){
-                var addr = XLSX.utils.encode_cell({r:R, c:C});
-                var cell = ws[addr]; var val = cell ? XLSX.utils.format_cell(cell) : '';
-                if(val) has = true;
-                row += '<td>' + esc(val) + '</td>';
+        for(var R = range.s.r + 1; R <= range.e.r; R++){
+            var rowHtml = '';
+            var hasRowData = false;
+            for(var i = 0; i < validCols.length; i++){
+                var addr = XLSX.utils.encode_cell({r: R, c: validCols[i].col});
+                var cell = ws[addr];
+                var val = cell ? XLSX.utils.format_cell(cell) : '';
+                if(val && val.trim()){
+                    hasRowData = true;
+                }
+                rowHtml += '<td>' + esc(val) + '</td>';
             }
-            if(has){ html += '<tr>' + row + '</tr>'; cnt++; }
+            if(hasRowData){
+                cnt++;
+                html += '<tr><td>' + cnt + '</td>' + rowHtml + '</tr>';
+            }
         }
         html += '</tbody>';
         tableEl.innerHTML = html;
@@ -254,7 +365,7 @@
             wrap.classList.remove('hidden');
             if(info) info.classList.remove('hidden');
         } catch(e) {
-            load.innerHTML = '<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-circle-exclamation text-3xl text-rose-400 mb-2 block"></i><p class="text-sm">Gagal memuat file Excel.</p><p class="text-xs">' + esc(e.message) + '</p></div>';
+            load.innerHTML = '<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-circle-exclamation text-3xl text-rose-400 mb-2 block"></i><p class="text-sm">Gagal memuat file CSV / Excel.</p><p class="text-xs">' + esc(e.message) + '</p></div>';
         }
     }
 

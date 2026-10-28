@@ -42,9 +42,9 @@
 
                     <ol>
                         @forelse($biros as $biro)
-                            <li class="biro-list-item mb-4 pb-2 border-b border-gray-100 last:border-b-0" id="biro-item-{{ $biro->id }}">
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <div>
+                            <li class="biro-list-item mb-4 pb-3 border-b border-gray-100 last:border-b-0" id="biro-item-{{ $biro->id }}">
+                                <div>
+                                    <div class="leading-relaxed">
                                         <span class="font-semibold text-gray-800 cursor-pointer hover:text-[#087E9B] transition-colors btn-toggle-biro" data-biro-id="{{ $biro->id }}">
                                             {{ $biro->name }}
                                         </span>
@@ -52,17 +52,19 @@
                                             <span class="text-gray-600">
                                                 @foreach($biro->koordinatorBiro as $koordinator)
                                                     <span class="text-gray-400 mx-1">|</span>
-                                                    <a href="mailto:{{ $koordinator->email }}" title="{{ $koordinator->email }}">{{ $koordinator->nama }}</a>
+                                                    <a href="mailto:{{ $koordinator->email }}" title="{{ $koordinator->email }}" class="text-[#087E9B] hover:underline">{{ $koordinator->nama }}</a>
                                                 @endforeach
                                             </span>
                                         @endif
                                     </div>
-                                    <button type="button" class="btn-toggle-biro not-prose inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-[#087E9B] hover:bg-[#087E9B] hover:text-white transition-all cursor-pointer shadow-xs" data-biro-id="{{ $biro->id }}" title="Klik untuk melihat anggota biro">
-                                        <i class="fa-solid fa-users text-[11px]"></i>
-                                        <span>Anggota</span>
-                                        <span class="bg-white text-[#087E9B] px-1.5 py-0.2 rounded-full text-[10px] font-bold border border-cyan-100">{{ $biro->anggotaBiro->count() }}</span>
-                                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 biro-chevron-{{ $biro->id }}"></i>
-                                    </button>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn-toggle-biro not-prose inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-[#087E9B] hover:bg-[#087E9B] hover:text-white transition-all cursor-pointer shadow-xs" data-biro-id="{{ $biro->id }}" title="Klik untuk melihat anggota biro">
+                                            <i class="fa-solid fa-users text-[11px]"></i>
+                                            <span>Anggota</span>
+                                            <span class="bg-white text-[#087E9B] px-1.5 py-0.2 rounded-full text-[10px] font-bold border border-cyan-100">{{ $biro->anggotaBiro->count() }}</span>
+                                            <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 biro-chevron-{{ $biro->id }}"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {{-- Accordion Anggota Biro --}}
