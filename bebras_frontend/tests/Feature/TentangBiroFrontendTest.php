@@ -280,6 +280,8 @@ class TentangBiroFrontendTest extends TestCase
 
         $contentDisposition = $response->headers->get('content-disposition');
         $this->assertStringContainsString('kartu-member-0012691764.pdf', $contentDisposition);
+    }
+
     public function test_multiple_user_dengan_biro_yang_sama_tidak_ditampilkan_berkali_kali(): void
     {
         $biroRole = Role::firstOrCreate(['name' => 'biro']);
@@ -328,4 +330,3 @@ class TentangBiroFrontendTest extends TestCase
         $response->assertSee('Koordinator PCR 2');
     }
 }
-
