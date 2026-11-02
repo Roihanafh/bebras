@@ -125,4 +125,91 @@ class AnggotaBiroTest extends TestCase
         $nextNo100 = AnggotaBiro::generateNextNoAnggota($biro->id);
         $this->assertEquals('100', $nextNo100);
     }
+
+    public function test_formatted_id_member_structure_matches_specification(): void
+    {
+        $biro = User::create([
+            'name'      => 'Biro Polinema',
+            'username'  => 'biro_polinema_' . uniqid(),
+            'email'     => 'polinema_' . uniqid() . '@example.com',
+            'password'  => bcrypt('secret'),
+            'kode_biro' => '333',
+        ]);
+
+        $anggota = new AnggotaBiro([
+            'biro_id'         => $biro->id,
+            'nama'            => 'M. Unggul Pamenang',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '1991-05-10',
+            'no_anggota'      => '764',
+            'status_validasi' => 'approved',
+        ]);
+        $anggota->setRelation('biro', $biro);
+
+        // yyy (333) + xx (26) + zz (91) + aaa (764) = 3332691764 (10 digit)
+        $this->assertEquals('3332691764', $anggota->formatted_id_member);
+    }
+
+    public function test_formatted_id_member_zero_pads_properly(): void
+    {
+        $biro = User::create([
+            'name'      => 'Biro Single Digit',
+            'username'  => 'biro_single_' . uniqid(),
+            'email'     => 'single_' . uniqid() . '@example.com',
+            'password'  => bcrypt('secret'),
+            'kode_biro' => '1',
+        ]);
+
+        $anggota = new AnggotaBiro([
+            'biro_id'         => $biro->id,
+            'nama'            => 'Budi Santoso',
+            'tahun_masuk'     => 2024,
+            'tanggal_lahir'   => '2005-02-02',
+            'no_anggota'      => '1',
+            'status_validasi' => 'approved',
+        ]);
+        $anggota->setRelation('biro', $biro);
+
+        // yyy (001) + xx (24) + zz (05) + aaa (001) = 0012405001
+        $this->assertEquals('0012405001', $anggota->formatted_id_member);
+    }
+
+    public function test_expiry_date_is_automatically_one_year_after_registration(): void
+    {
+        $anggota = new AnggotaBiro([
+            'nama' => 'Anggota Expiry Test',
+        ]);
+        $anggota->created_at = \Carbon\Carbon::parse('2026-10-11 10:00:00');
+
+        $this->assertEquals('2027-10-11', $anggota->expiry_date->format('Y-m-d'));
+        $this->assertEquals('exp 11/10/2027', $anggota->formatted_expiry_date);
+    }
+
+    public function test_qr_code_svg_and_base64_generation(): void
+    {
+        $biro = User::create([
+            'name'      => 'Biro QR Test',
+            'username'  => 'biro_qr_' . uniqid(),
+            'email'     => 'qr_' . uniqid() . '@example.com',
+            'password'  => bcrypt('secret'),
+            'kode_biro' => '999',
+        ]);
+
+        $anggota = new AnggotaBiro([
+            'biro_id'         => $biro->id,
+            'nama'            => 'Anggota QR',
+            'tahun_masuk'     => 2026,
+            'tanggal_lahir'   => '2000-01-01',
+            'no_anggota'      => '001',
+            'status_validasi' => 'approved',
+        ]);
+        $anggota->setRelation('biro', $biro);
+
+        $svg = $anggota->qr_code_svg;
+        $this->assertStringContainsString('<svg', $svg);
+
+        $base64 = $anggota->qr_code_base64;
+        $this->assertStringStartsWith('data:image/svg+xml;base64,', $base64);
+    }
 }
+
