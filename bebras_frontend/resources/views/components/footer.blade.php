@@ -30,8 +30,10 @@
         </ul>
         <p class="mt-6 text-sm font-medium">🤝 Dikelola oleh:</p>
         <div class="flex items-center gap-4 mt-3">
-          <img src="{{ asset('/img/toki.png') }}" alt="TOKI" class="h-8 hover:scale-110 transition">
-          <img src="{{ asset('/img/kemdikbud.png') }}" alt="Kemdikbud" class="h-8 hover:scale-110 transition">
+          <a href="https://toki.id/" target="_blank" rel="noopener noreferrer" title="Tim Olimpiade Komputer Indonesia">
+            <img src="{{ asset('/img/toki.png') }}" alt="TOKI" class="h-8 hover:scale-110 transition">
+          </a>
+          <img src="{{ asset('/img/maskot-bebras.png') }}" alt="Bebras Indonesia" class="h-8 hover:scale-110 transition">
         </div>
       </div>
 
@@ -41,11 +43,9 @@
           🔗 Tautan
         </h3>
         <ul class="space-y-3 text-sm">
-          <li><a href="https://www.bebras.org/" class="block hover:translate-x-1 transition">🌍 Bebras Internasional</a></li>
-          <li><a href="http://kemendikbud.go.id/" class="block hover:translate-x-1 transition">🏛️ Kementerian Pendidikan</a></li>
-          <li><a href="http://toki.or.id/" class="block hover:translate-x-1 transition">💻 TOKI Indonesia</a></li>
-          <li><a href="https://stei.itb.ac.id/" class="block hover:translate-x-1 transition">🎓 STEI ITB</a></li>
-          <li><a href="https://cs.ui.ac.id/" class="block hover:translate-x-1 transition">🎓 Fasilkom UI</a></li>
+          <li><a href="https://www.bebras.org/" target="_blank" rel="noopener noreferrer" class="block hover:translate-x-1 transition">🌍 Bebras Internasional</a></li>
+          <li><a href="https://gurupaudpnf.kemendikdasmen.go.id/artikel/berita/membangun-berpikir-komputasional-sejak-dini" target="_blank" rel="noopener noreferrer" class="block hover:translate-x-1 transition">🏛️ Kemendikdasmen</a></li>
+          <li><a href="https://toki.id/" target="_blank" rel="noopener noreferrer" class="block hover:translate-x-1 transition">💻 TOKI Indonesia</a></li>
         </ul>
       </div>
 
