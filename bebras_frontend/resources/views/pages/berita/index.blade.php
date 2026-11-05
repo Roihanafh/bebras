@@ -95,7 +95,7 @@
 
                                 <!-- Deskripsi -->
                                 <div class="text-gray-600 text-sm mb-3 line-clamp-vertical break-words" style="max-height: 4.5rem; overflow: hidden;">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($berita->deskripsi), 180) }}
+                                    {{ $berita->getExcerpt(180) }}
                                 </div>
                             </div>
 

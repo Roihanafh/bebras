@@ -143,7 +143,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $kegiatan->judul }}</h3>
                     <p class="text-gray-600 text-sm">
-                        {{ $kegiatan->deskripsi }}
+                        {{ $kegiatan->clean_deskripsi }}
                     </p>
                 </div>
                 @endforeach
@@ -210,7 +210,7 @@
                                 @if ($pengumumanTanggal)
                                     <p class="text-gray-500 text-xs mb-3">{{ $pengumumanTanggal }}</p>
                                 @endif
-                                <p class="text-gray-600 text-sm">{{ \Illuminate\Support\Str::limit(strip_tags($pengumuman->deskripsi), 160) }}</p>
+                                <p class="text-gray-600 text-sm">{{ $pengumuman->getExcerpt(160) }}</p>
                                 <button type="button" onclick='openPengumumanModal({!! $pengumumanData !!})'
                                     class="mt-auto pt-4 text-left text-xs font-semibold text-bebrasDarkBlue hover:text-bebrasBlue inline-flex items-center gap-1">
                                     Lihat selengkapnya <i class="fas fa-arrow-right text-[10px]"></i>
@@ -303,7 +303,7 @@
                                     @endif
                                 </div>
                                 <p class="text-gray-600 text-sm">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($berita->deskripsi), 160) }}
+                                    {{ $berita->getExcerpt(160) }}
                                 </p>
                                 <a href="{{ route('berita') }}"
                                     onclick='event.preventDefault(); openBeritaModal({!! $beritaData !!})'
