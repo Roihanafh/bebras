@@ -151,16 +151,53 @@
         </div>
     </section>
 
-    @if ($pengumumans->isNotEmpty())
-        <section class="py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
-                        <div class="h-1 w-24 bg-bebrasBlue mr-3"></div>
-                        Pengumuman
-                    </h2>
-                </div>
+    {{-- ===== SECTION PENGUMUMAN ===== --}}
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center">
+                    <div class="h-1.5 w-16 bg-gradient-to-r from-bebrasDarkBlue to-bebrasBlue mr-3 rounded-full"></div>
+                    Pengumuman
+                </h2>
+            </div>
 
+            {{-- 1. Pinned Highlight: Portal Laporan Kendala (High-contrast, breaks visual fatigue) --}}
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#083944] via-[#0b4d5c] to-[#007b99] text-white p-6 sm:p-8 shadow-xl mb-10 border border-cyan-500/20">
+                {{-- Decorative background glow & subtle elements --}}
+                <div class="absolute -right-10 -top-10 w-72 h-72 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute right-1/4 -bottom-10 w-48 h-48 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-white/10 backdrop-blur-md rounded-2xl p-3 flex items-center justify-center border border-white/20 shadow-md">
+                            <img src="{{ asset('img/task.png') }}" alt="Ilustrasi Kendala Bebras" class="w-full h-full object-contain drop-shadow">
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-400/20 text-cyan-200 border border-cyan-300/30 mb-2.5">
+                                <i class="fas fa-bullhorn text-[11px]"></i>
+                                <span>Pemberitahuan Resmi</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                                Mengalami Kendala Saat Tantangan Bebras?
+                            </h3>
+                            <p class="text-cyan-100/90 text-sm sm:text-base mt-2 max-w-2xl leading-relaxed">
+                                Peserta, guru pendamping, orang tua/wali, maupun koordinator biro dapat mengakses portal resmi untuk menyampaikan laporan kendala teknis agar dapat segera ditinjau panitia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex-shrink-0 w-full sm:w-auto text-center">
+                        <a href="https://bebras.or.id/bebras_laporan/" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white text-[#083944] hover:bg-cyan-50 font-bold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group">
+                            <span>Akses Portal Laporan</span>
+                            <i class="fas fa-arrow-up-right-from-square text-xs text-bebrasDarkBlue group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 2. Daftar Pengumuman Lainnya --}}
+            @if ($pengumumans->isNotEmpty())
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach ($pengumumans as $pengumuman)
                         @php
@@ -195,33 +232,37 @@
                                 'deskripsi' => $pengumuman->deskripsi,
                             ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                         @endphp
-                        <article class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">
-                            <div class="h-48 overflow-hidden">
+                        <article class="bg-white rounded-2xl shadow-sm hover:shadow-md border border-slate-200/70 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col group">
+                            <div class="h-48 overflow-hidden relative bg-slate-100">
                                 @if ($pengumumanGambar)
-                                    <img src="{{ $pengumumanGambar }}" alt="{{ $pengumuman->judul }}" class="w-full h-full object-cover">
+                                    <img src="{{ $pengumumanGambar }}" alt="{{ $pengumuman->judul }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 @else
-                                    <div class="w-full h-full bg-blue-50 flex items-center justify-center">
-                                        <i class="fas fa-bell text-3xl text-bebrasBlue"></i>
+                                    <div class="w-full h-full bg-blue-50/70 flex items-center justify-center">
+                                        <i class="fas fa-bell text-3xl text-bebrasDarkBlue"></i>
                                     </div>
                                 @endif
                             </div>
                             <div class="p-6 flex flex-col flex-1">
-                                <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $pengumuman->judul }}</h3>
+                                <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-bebrasDarkBlue transition line-clamp-2">{{ $pengumuman->judul }}</h3>
                                 @if ($pengumumanTanggal)
-                                    <p class="text-gray-500 text-xs mb-3">{{ $pengumumanTanggal }}</p>
+                                    <p class="text-slate-500 text-xs mb-3 flex items-center gap-1.5 font-medium">
+                                        <i class="far fa-calendar-alt text-bebrasDarkBlue text-xs"></i>
+                                        <span>{{ $pengumumanTanggal }}</span>
+                                    </p>
                                 @endif
-                                <p class="text-gray-600 text-sm">{{ $pengumuman->getExcerpt(160) }}</p>
+                                <p class="text-slate-600 text-sm leading-relaxed mb-4 flex-1">{{ $pengumuman->getExcerpt(160) }}</p>
                                 <button type="button" onclick='openPengumumanModal({!! $pengumumanData !!})'
-                                    class="mt-auto pt-4 text-left text-xs font-semibold text-bebrasDarkBlue hover:text-bebrasBlue inline-flex items-center gap-1">
-                                    Lihat selengkapnya <i class="fas fa-arrow-right text-[10px]"></i>
+                                    class="mt-auto pt-3 text-left text-xs font-bold text-bebrasDarkBlue hover:text-blue-800 inline-flex items-center gap-1.5 transition">
+                                    <span>Lihat selengkapnya</span>
+                                    <i class="fas fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform"></i>
                                 </button>
                             </div>
                         </article>
                     @endforeach
                 </div>
-            </div>
-        </section>
-    @endif
+            @endif
+        </div>
+    </section>
 
     <section class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
